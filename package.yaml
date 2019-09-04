@@ -1,0 +1,57 @@
+name:                colog-design
+version:             0.1.0.0
+github:              "ssanj/colog-design"
+license:             BSD3
+author:              "sanjiv sahayam"
+maintainer:          "sanjsmailbox@gmail.com"
+copyright:           "(c) 2017 sanjiv sahayam"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/ssanj/colog-design#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- mtl
+
+library:
+  source-dirs: src
+  dependencies:
+    - oauthenticated
+    - bytestring
+    - aeson
+    - http-client
+    - http-client-tls
+    - http-types
+    - case-insensitive
+
+executables:
+  colog-design-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - colog-design
+
+tests:
+  colog-design-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - colog-design
