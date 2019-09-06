@@ -1,6 +1,6 @@
-name:                colog-design
+name:                milo
 version:             0.1.0.0
-github:              "ssanj/colog-design"
+github:              "ssanj/milo"
 license:             BSD3
 author:              "sanjiv sahayam"
 maintainer:          "sanjsmailbox@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/ssanj/colog-design#readme>
+description:         Please see the README on GitHub at <https://github.com/ssanj/milo#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -35,7 +35,7 @@ library:
     - case-insensitive
 
 executables:
-  colog-design-exe:
+  milo-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -43,10 +43,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - colog-design
+    - milo
 
 tests:
-  colog-design-test:
+  milo-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -54,4 +54,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - colog-design
+    - milo
