@@ -2,6 +2,7 @@
 
 module Milo.Oauth1 where
 
+import Control.Monad
 import qualified Network.OAuth               as OA
 import qualified Network.OAuth.Types.Params  as OA
 import qualified Data.ByteString             as S
@@ -46,12 +47,25 @@ signRequest creds server req = do
   let oax = OA.Oa { OA.credentials = creds, OA.workflow = OA.PermanentTokenRequest $ C8.pack "blee", OA.pin = pinx}
   return $ OA.sign oax server req
 
-makeRequest :: Client.Manager -> Client.Request -> IO (Either String Value)
+makeRequest :: FromJSON a => Client.Manager -> Client.Request -> IO (Either String a)
 makeRequest manager req = do
     -- print req
-    putStrLn $ maybe "-" show $ listToMaybe . filter (\(n, _) -> n == hAuthorization) . Client.requestHeaders $ req
+    -- putStrLn $ maybe "-" show $ listToMaybe . filter (\(n, _) -> n == hAuthorization) . Client.requestHeaders $ req
     resp <- Client.httpLbs req manager
     -- print resp
     return $ eitherDecodeStrict' (LS.toStrict $ Client.responseBody resp)
 
-
+performAction :: FromJSON a => Env -> Client.Manager -> RequestProvider IO a -> IO (Either String a)
+performAction env manager reqProvider = do
+  req               <- getRequest reqProvider
+  let 
+      clientKey         = unClientKey . _clientKey $ env
+      clientSecret      = unClientSecret . _clientSecret $ env
+      accessToken       = unAccessToken . _accessToken $ env
+      accessTokenSecret = unAccessTokenSecret . _accessTokenSecret $ env
+      clientToken       = clientOauthToken (OAuthToken clientKey) (OAuthTokenSecret clientSecret)
+      clientCred        = oauthClientCred clientToken
+      permToken         = permanentOauthToken (OAuthToken accessToken) (OAuthTokenSecret accessTokenSecret)
+      permCred          = oauthPermanentCred permToken clientCred
+  signedReq <- signRequest permCred oserver req
+  makeRequest manager signedReq

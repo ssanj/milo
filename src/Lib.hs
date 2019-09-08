@@ -12,6 +12,8 @@ someFunc = do
   manager <- Client.newManager tlsManager
   homeTimelineAction env manager
   putStrLn "----------------------"
+  putStrLn "----------------------"
+  putStrLn "----------------------"
   mentionsTimelineAction env manager
 
 tlsManager :: Client.ManagerSettings

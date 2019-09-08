@@ -11,5 +11,5 @@ homeTimelineAction env manager = do
   result <- getHomeTimeline env manager
   let output = case result of
                 Left error -> "Couldn't get Home Timeline due to " <> error
-                Right hometimeline -> intercalate "\n" $ (\(n, v) -> (show n) <> ". " <> formatHomeTimeline v) <$> zip [1..] hometimeline
+                Right hometimeline -> intercalate "\n" $ (\(n, v) -> show n <> ". " <> formatHomeTimeline v) <$> zip [1..] hometimeline
   putStrLn output
