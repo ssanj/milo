@@ -2,7 +2,6 @@
 
 module Milo.Oauth1 where
 
-import Control.Monad
 import qualified Network.OAuth               as OA
 import qualified Network.OAuth.Types.Params  as OA
 import qualified Data.ByteString             as S
@@ -38,9 +37,6 @@ oauthPermanentCred = OA.permanentCred
 oserver :: OA.Server
 oserver = OA.defaultServer
 
-tlsManager :: Client.ManagerSettings
-tlsManager = Client.tlsManagerSettings
-
 signRequest :: OA.Cred OA.Permanent -> OA.Server -> Client.Request -> IO Client.Request
 signRequest creds server req = do
   pinx <- OA.freshPin
@@ -52,7 +48,6 @@ makeRequest manager req = do
     -- print req
     -- putStrLn $ maybe "-" show $ listToMaybe . filter (\(n, _) -> n == hAuthorization) . Client.requestHeaders $ req
     resp <- Client.httpLbs req manager
-    -- print resp
     return $ eitherDecodeStrict' (LS.toStrict $ Client.responseBody resp)
 
 performAction :: FromJSON a => Env -> Client.Manager -> RequestProvider IO a -> IO (Either String a)
