@@ -26,9 +26,9 @@ performAction env manager reqProviderA reqProviderB = do
       clientKey         = _clientKey $ env
       clientSecret      = _clientSecret $ env
       clientToken       = OAuth2ClientToken clientKey clientSecret
-  tokenResponseE <- (getRequest $ reqProviderA clientToken) `tap` print >>= makeRequest manager
+  tokenResponseE <- (getRequest $ reqProviderA clientToken) >>= makeRequest manager
   case tokenResponseE of
-    Right bearer -> (getRequest $ reqProviderB bearer) `tap` print >>= makeRequest manager
+    Right bearer -> (getRequest $ reqProviderB bearer) >>= makeRequest manager
     Left error -> pure . Left $ error
 
 tap :: Show a => IO a -> (a -> IO ()) -> IO a

@@ -21,7 +21,7 @@ homeTimelineUrl :: String
 homeTimelineUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
 
 countParam :: (C8.ByteString, Maybe C8.ByteString)
-countParam = ("count", Just "100")
+countParam = ("count", Just "2")
 
 addQueryParams :: Client.Request -> Client.Request
 addQueryParams = Client.setQueryString [countParam]

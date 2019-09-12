@@ -11,3 +11,5 @@ newtype AccessTokenSecret = AccessTokenSecret { unAccessTokenSecret :: C8.ByteSt
 data Env = Env { _clientKey :: ClientKey, _clientSecret :: ClientSecret, _accessToken :: AccessToken, _accessTokenSecret :: AccessTokenSecret}
 
 newtype RequestProvider m a = RequestProvider { getRequest :: m Client.Request }
+
+newtype TwitterUser = TwitterUser C8.ByteString deriving Show
