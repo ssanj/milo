@@ -5,6 +5,7 @@ module Milo.UserTimeline.Service (getUserTimeline) where
 import Milo.Oauth2
 import Milo.Config
 import Milo.Model
+import Milo.Request
 import Milo.Oauth2.Model
 -- import Milo.UserTimeline.Model
 import qualified Data.ByteString.Char8       as C8
@@ -32,14 +33,8 @@ userRequestProvider :: TwitterHandle -> BearerToken -> RequestProvider IO [Tweet
 userRequestProvider tuser bearer =
   RequestProvider $ (addBearerTokenAuth bearer . addQueryParams tuser) <$> Client.parseRequest userTimelineUrl
 
-countParam :: (C8.ByteString, Maybe C8.ByteString)
-countParam = ("count", Just "2")
-
 twitterHandleParam :: TwitterHandle -> (C8.ByteString, Maybe C8.ByteString)
 twitterHandleParam (TwitterHandle tuser)= ("screen_name", Just tuser)
-
-extendedTweetParam :: (C8.ByteString, Maybe C8.ByteString)
-extendedTweetParam = ("tweet_mode", Just "extended")
 
 addBasicAuth :: OAuth2ClientToken -> Client.Request -> Client.Request
 addBasicAuth (OAuth2ClientToken (ClientKey key) (ClientSecret secret)) = Client.applyBasicAuth key secret
