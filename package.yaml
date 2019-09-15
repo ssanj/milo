@@ -33,6 +33,7 @@ library:
     - http-client-tls
     - http-types
     - case-insensitive
+    - ansi-wl-pprint
 
 executables:
   milo-exe:

@@ -11,7 +11,8 @@ userTimelineAction env manager tuser = do
   result <- getUserTimeline env manager tuser
   let output = case result of
                 Left error -> "Couldn't get User Timeline of " <>  show tuser <> " due to " <> error
-                Right tweets -> intercalate "\n" $ (\(n, v) -> show n <> ". " <> formatTweet v) <$> zip [1..] tweets
+                Right tweets -> intercalate "\n" $ (\(n, v) -> show n <> ". " <> formatTweetColored v) <$> zip [1..] tweets
       username = show tuser
       
   putStrLn $ username <> "\n" <> output
+  
