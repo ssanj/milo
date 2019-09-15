@@ -14,9 +14,9 @@ someFunc :: IO ()
 someFunc = do
   env     <- getConfig
   manager <- Client.newManager tlsManager
-  userTimelineAction env manager $ TwitterUser "wjlow"
-  userTimelineAction env manager $ TwitterUser "KenScambler"
-  userTimelineAction env manager $ TwitterUser "cwmyers"
+  userTimelineAction env manager $ TwitterHandle "wjlow"
+  userTimelineAction env manager $ TwitterHandle "KenScambler"
+  userTimelineAction env manager $ TwitterHandle "cwmyers"
   homeTimelineAction env manager
   putStrLn "----------------------"
   mentionsTimelineAction env manager

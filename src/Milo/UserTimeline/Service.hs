@@ -6,14 +6,14 @@ import Milo.Oauth2
 import Milo.Config
 import Milo.Model
 import Milo.Oauth2.Model
-import Milo.UserTimeline.Model
+-- import Milo.UserTimeline.Model
 import qualified Data.ByteString.Char8       as C8
 import qualified Network.HTTP.Client         as Client
 import qualified Network.HTTP.Client.TLS     as Client
 import qualified Network.HTTP.Types          as Client
 import Data.Aeson (fromJSON)
 
-getUserTimeline :: Env -> Client.Manager -> TwitterUser -> IO (Either String [UserTimeline])
+getUserTimeline :: Env -> Client.Manager -> TwitterHandle -> IO (Either String [Tweet])
 getUserTimeline env manager tuser = performAction env manager bearerRequestProvider $ userRequestProvider tuser
 
 --- access token retrieval 
@@ -28,15 +28,18 @@ bearerRequestProvider oauth2ClientToken =
 userTimelineUrl :: String
 userTimelineUrl = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 
-userRequestProvider :: TwitterUser -> BearerToken -> RequestProvider IO [UserTimeline]
+userRequestProvider :: TwitterHandle -> BearerToken -> RequestProvider IO [Tweet]
 userRequestProvider tuser bearer =
   RequestProvider $ (addBearerTokenAuth bearer . addQueryParams tuser) <$> Client.parseRequest userTimelineUrl
 
 countParam :: (C8.ByteString, Maybe C8.ByteString)
 countParam = ("count", Just "2")
 
-twitterUserParam :: TwitterUser -> (C8.ByteString, Maybe C8.ByteString)
-twitterUserParam (TwitterUser tuser)= ("screen_name", Just tuser)
+twitterHandleParam :: TwitterHandle -> (C8.ByteString, Maybe C8.ByteString)
+twitterHandleParam (TwitterHandle tuser)= ("screen_name", Just tuser)
+
+extendedTweetParam :: (C8.ByteString, Maybe C8.ByteString)
+extendedTweetParam = ("tweet_mode", Just "extended")
 
 addBasicAuth :: OAuth2ClientToken -> Client.Request -> Client.Request
 addBasicAuth (OAuth2ClientToken (ClientKey key) (ClientSecret secret)) = Client.applyBasicAuth key secret
@@ -51,5 +54,5 @@ addBearerTokenAuth (BearerToken _ accessToken) req =
 addTokenFormParams :: Client.Request -> Client.Request
 addTokenFormParams = Client.urlEncodedBody [("grant_type", "client_credentials")]
 
-addQueryParams :: TwitterUser -> Client.Request -> Client.Request
-addQueryParams tuser = Client.setQueryString [countParam, twitterUserParam tuser]
+addQueryParams :: TwitterHandle -> Client.Request -> Client.Request
+addQueryParams tuser = Client.setQueryString [countParam, twitterHandleParam tuser, extendedTweetParam]

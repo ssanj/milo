@@ -1,5 +1,9 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Milo.Model where
 
+import GHC.Generics
+import Data.Aeson (FromJSON)
 import qualified Data.ByteString.Char8 as C8
 import qualified Network.HTTP.Client   as Client
 
@@ -12,4 +16,17 @@ data Env = Env { _clientKey :: ClientKey, _clientSecret :: ClientSecret, _access
 
 newtype RequestProvider m a = RequestProvider { getRequest :: m Client.Request }
 
-newtype TwitterUser = TwitterUser C8.ByteString deriving Show
+newtype TwitterHandle = TwitterHandle C8.ByteString deriving Show
+
+data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving (Generic, Show)
+
+data Tweet = 
+  Tweet { 
+    created_at :: !String, 
+    user :: TweetedBy,
+    full_text :: !String, 
+    lang :: !String
+  } deriving (Generic, Show)
+
+instance FromJSON TweetedBy where
+instance FromJSON Tweet where
