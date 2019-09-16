@@ -2,7 +2,7 @@
 
 module Milo.HomeTimeline.Service (getHomeTimeline) where
 
-import Milo.Oauth1
+import Milo.Oauth1.Controller
 import Milo.Config
 import Milo.Model
 import Milo.Request

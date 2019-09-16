@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Milo.Oauth2 where
+module Milo.Oauth2.Controller where
 
 import qualified Network.OAuth               as OA
 import qualified Network.OAuth.Types.Params  as OA
@@ -14,24 +14,19 @@ import Data.CaseInsensitive (mk)
 import Milo.Config
 import Milo.Model
 import Milo.Oauth2.Model
+import Milo.Request (makeRequest)
 import Data.Aeson (FromJSON, Value, eitherDecodeStrict', Result(..), fromJSON)
 import Data.Aeson.Types (parseEither)
 
--- TODO: this is common and should be reused.
-makeRequest :: FromJSON a => Client.Manager -> Client.Request -> IO (Either String a)
-makeRequest manager req = do
-    resp <- Client.httpLbs req manager
-    return $ eitherDecodeStrict' (LS.toStrict $ Client.responseBody resp)
-
-performAction :: FromJSON b => Env -> Client.Manager -> (BearerToken -> RequestProvider IO b) -> IO (Either String b)
-performAction env manager reqProviderB = do
+performAction :: FromJSON a => Env -> Client.Manager -> (BearerToken -> RequestProvider IO a) -> IO (Either String a)
+performAction env manager bearerReqProvider = do
   let 
       clientKey         = _clientKey env
       clientSecret      = _clientSecret env
       clientToken       = OAuth2ClientToken clientKey clientSecret
   tokenResponseE <- getRequest (bearerRequestProvider clientToken) >>= makeRequest manager
   case tokenResponseE of
-    Right bearer -> getRequest (reqProviderB bearer) >>= makeRequest manager
+    Right bearer -> getRequest (bearerReqProvider bearer) >>= makeRequest manager
     Left error -> pure . Left $ error
 
 tap :: Show a => IO a -> (a -> IO ()) -> IO a
