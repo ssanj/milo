@@ -20,9 +20,9 @@ getUserTimeline env manager = performAction env manager . userRequestProvider
 userTimelineUrl :: String
 userTimelineUrl = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 
-userRequestProvider :: TwitterHandle -> BearerToken -> RequestProvider IO [Tweet]
-userRequestProvider tuser bearer =
-  RequestProvider $ addBearerTokenAuth bearer . addQueryParams tuser <$> Client.parseRequest userTimelineUrl
+userRequestProvider :: TwitterHandle -> RequestProvider IO [Tweet]
+userRequestProvider tuser  =
+  RequestProvider $ addQueryParams tuser <$> Client.parseRequest userTimelineUrl
 
 twitterHandleParam :: TwitterHandle -> (C8.ByteString, Maybe C8.ByteString)
 twitterHandleParam (TwitterHandle tuser)= ("screen_name", Just tuser)

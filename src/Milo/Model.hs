@@ -20,6 +20,10 @@ newtype TwitterHandle = TwitterHandle C8.ByteString deriving Show
 
 data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving (Generic, Show)
 
+data TweetOutput = TweetOutput String [Tweet] deriving (Show)
+
+data TweetRetrievalError = TweetRetrievalError String String String deriving (Show)
+
 data Tweet = 
   Tweet { 
     created_at :: !String, 

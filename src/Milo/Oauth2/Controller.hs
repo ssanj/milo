@@ -18,15 +18,15 @@ import Milo.Request (makeRequest)
 import Data.Aeson (FromJSON, Value, eitherDecodeStrict', Result(..), fromJSON)
 import Data.Aeson.Types (parseEither)
 
-performAction :: FromJSON a => Env -> Client.Manager -> (BearerToken -> RequestProvider IO a) -> IO (Either String a)
-performAction env manager bearerReqProvider = do
+performAction :: FromJSON a => Env -> Client.Manager -> RequestProvider IO a -> IO (Either String a)
+performAction env manager reqProvider = do
   let 
       clientKey         = _clientKey env
       clientSecret      = _clientSecret env
       clientToken       = OAuth2ClientToken clientKey clientSecret
   tokenResponseE <- getRequest (bearerRequestProvider clientToken) >>= makeRequest manager
   case tokenResponseE of
-    Right bearer -> getRequest (bearerReqProvider bearer) >>= makeRequest manager
+    Right bearer -> (addBearerTokenAuth bearer <$> getRequest reqProvider) >>= makeRequest manager
     Left error -> pure . Left $ error
 
 tap :: Show a => IO a -> (a -> IO ()) -> IO a
