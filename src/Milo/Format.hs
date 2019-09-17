@@ -24,11 +24,13 @@ displayString = docToString . displayFormat
 docToString :: ANSI.Doc -> String
 docToString doc = ANSI.displayS (ANSI.renderPretty 0.4 80 doc) ""
   
-headingFormat :: String -> ANSI.Doc
-headingFormat heading = ANSI.onwhite $ ANSI.black (ANSI.text heading)
+headingFormat :: HeadingType -> ANSI.Doc
+headingFormat (Heading heading)    = ANSI.onwhite $ ANSI.black (ANSI.text heading)
+headingFormat (Mention handle)     = ANSI.onwhite $ ANSI.black (ANSI.text handle)
+headingFormat (Search searchTerms) = ANSI.onwhite $ ANSI.black (ANSI.text "Search:" ANSI.<+> ANSI.text searchTerms)
 
 displayFormat :: Either TweetRetrievalError TweetOutput -> ANSI.Doc
-displayFormat (Left (TweetRetrievalError heading endpoint error)) = 
+displayFormat (Left (TweetRetrievalError heading (TwitterEndpoint endpoint) (TwitterError error))) = 
   let title = headingFormat heading
       errorMessage = ANSI.text endpoint ANSI.<+> (ANSI.text "failed due to:") ANSI.<+> ANSI.red (ANSI.text error)
   in title ANSI.<$$> errorMessage
@@ -36,4 +38,4 @@ displayFormat (Left (TweetRetrievalError heading endpoint error)) =
 displayFormat (Right (TweetOutput heading tweets)) = 
   let title = headingFormat heading
       tweetLine = intercalate "\n" $ (\(n, v) -> show n <> ". " <> (docToString $ formatTweetColored v)) <$> zip [1..] tweets
-  in title ANSI.<$$> (ANSI.text tweetLine)
+  in ANSI.linebreak ANSI.<> title ANSI.<$$> (ANSI.text tweetLine) ANSI.<> ANSI.linebreak 

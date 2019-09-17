@@ -16,13 +16,23 @@ data Env = Env { _clientKey :: ClientKey, _clientSecret :: ClientSecret, _access
 
 newtype RequestProvider m a = RequestProvider { getRequest :: m Client.Request }
 
-newtype TwitterHandle = TwitterHandle C8.ByteString deriving Show
+newtype TwitterHandle = TwitterHandle C8.ByteString
+
+newtype TweetCount = TweetCount Int
+
+data MentionRequest = MentionRequest TwitterHandle TweetCount
 
 data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving (Generic, Show)
 
-data TweetOutput = TweetOutput String [Tweet] deriving (Show)
+data HeadingType = Heading String | Mention String | Search String
 
-data TweetRetrievalError = TweetRetrievalError String String String deriving (Show)
+data TweetOutput = TweetOutput HeadingType [Tweet]
+
+newtype TwitterEndpoint = TwitterEndpoint String
+
+newtype TwitterError = TwitterError String
+
+data TweetRetrievalError = TweetRetrievalError HeadingType TwitterEndpoint TwitterError
 
 data Tweet = 
   Tweet { 

@@ -25,7 +25,13 @@ someFunc = do
 
 endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
 endpoints env manager = 
-  let twitterHandles = [TwitterHandle "wjlow", TwitterHandle "KenScambler", TwitterHandle "cwmyers"]
+  let twitterHandles = [
+                         MentionRequest (TwitterHandle "wjlow") (TweetCount 5), 
+                         MentionRequest (TwitterHandle "KenScambler") (TweetCount 10), 
+                         MentionRequest (TwitterHandle "cwmyers") (TweetCount 2),
+                         MentionRequest (TwitterHandle "ajfitzpatrick") (TweetCount 2),
+                         MentionRequest (TwitterHandle "andrewfnewman") (TweetCount 5)
+                       ]
   in (userTimelineAction env manager) <$> twitterHandles
 
 tlsManager :: Client.ManagerSettings
