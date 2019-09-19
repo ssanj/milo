@@ -24,7 +24,16 @@ someFunc = do
   -- mentionsTimelineAction env manager
 
 endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
-endpoints env manager = 
+endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines]
+
+homeTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+homeTimelines env manager = [homeTimelineAction env manager]
+
+mentionsTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+mentionsTimelines env manager = [mentionsTimelineAction env manager]
+
+userTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+userTimelines env manager = 
   let twitterHandles = [
                          MentionRequest (TwitterHandle "wjlow") (TweetCount 5), 
                          MentionRequest (TwitterHandle "KenScambler") (TweetCount 10), 
@@ -33,6 +42,7 @@ endpoints env manager =
                          MentionRequest (TwitterHandle "andrewfnewman") (TweetCount 5)
                        ]
   in (userTimelineAction env manager) <$> twitterHandles
+
 
 tlsManager :: Client.ManagerSettings
 tlsManager = Client.tlsManagerSettings
