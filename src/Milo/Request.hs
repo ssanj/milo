@@ -25,4 +25,5 @@ makeRequest manager req = do
     -- print req
     -- putStrLn $ maybe "-" show $ listToMaybe . filter (\(n, _) -> n == hAuthorization) . Client.requestHeaders $ req
     resp <- Client.httpLbs req manager
+    -- print $ LS.toStrict $ Client.responseBody resp
     return $ eitherDecodeStrict' (LS.toStrict $ Client.responseBody resp)

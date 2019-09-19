@@ -20,7 +20,13 @@ newtype TwitterHandle = TwitterHandle C8.ByteString
 
 newtype TweetCount = TweetCount Int
 
+newtype SearchHitCount = SearchHitCount Int
+
+newtype SearchCriteria = SearchCriteria C8.ByteString
+
 data MentionRequest = MentionRequest TwitterHandle TweetCount
+
+data SearchRequest = SearchRequest SearchCriteria SearchHitCount
 
 data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving (Generic, Show)
 
@@ -42,5 +48,8 @@ data Tweet =
     lang :: !String
   } deriving (Generic, Show)
 
+data TwitterSearchResult = TwitterSearchResult { statuses :: [Tweet] } deriving (Generic, Show)
+
 instance FromJSON TweetedBy where
 instance FromJSON Tweet where
+instance FromJSON TwitterSearchResult where

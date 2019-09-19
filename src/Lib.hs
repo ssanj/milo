@@ -4,12 +4,13 @@ module Lib where
 
 import Milo.Config
 import Milo.Model
-import Data.Foldable (traverse_)
-import Milo.Format (displayString)
-import Milo.HomeTimeline.Controller
-import Milo.MentionsTimeline.Controller
-import Milo.UserTimeline.Controller
-import qualified Network.HTTP.Client as Client
+import Data.Foldable                     (traverse_)
+import Milo.Format                       (displayString)
+import Milo.HomeTimeline.Controller      (homeTimelineAction)
+import Milo.MentionsTimeline.Controller  (mentionsTimelineAction)
+import Milo.UserTimeline.Controller      (userTimelineAction)
+import Milo.Search.Controller            (searchAction)
+import qualified Network.HTTP.Client     as Client
 import qualified Network.HTTP.Client.TLS as Client
 
 someFunc :: IO ()
@@ -24,7 +25,10 @@ someFunc = do
   -- mentionsTimelineAction env manager
 
 endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
-endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines]
+endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines, searches]
+
+-- endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+-- endpoints env manager = concatMap (\f -> f env manager) [searches]
 
 homeTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
 homeTimelines env manager = [homeTimelineAction env manager]
@@ -43,6 +47,13 @@ userTimelines env manager =
                        ]
   in (userTimelineAction env manager) <$> twitterHandles
 
+searches :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+searches env manager = 
+  let searches = [
+                   SearchRequest (SearchCriteria "#scala") (SearchHitCount 10),
+                   SearchRequest (SearchCriteria "#haskell") (SearchHitCount 10)
+                 ]
+  in (searchAction env manager) <$> searches
 
 tlsManager :: Client.ManagerSettings
 tlsManager = Client.tlsManagerSettings
