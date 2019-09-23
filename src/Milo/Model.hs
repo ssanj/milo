@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Milo.Model where
 
@@ -38,12 +39,15 @@ newtype TwitterEndpoint = TwitterEndpoint String
 
 newtype TwitterError = TwitterError String
 
+data RetweetStatus = RetweetStatus { full_text :: !String, user :: TweetedBy }  deriving (Generic, Show)
+
 data TweetRetrievalError = TweetRetrievalError HeadingType TwitterEndpoint TwitterError
 
 data Tweet = 
   Tweet { 
     created_at :: !String, 
     user :: TweetedBy,
+    retweeted_status :: Maybe RetweetStatus,
     full_text :: !String, 
     lang :: !String
   } deriving (Generic, Show)
@@ -53,3 +57,4 @@ data TwitterSearchResult = TwitterSearchResult { statuses :: [Tweet] } deriving 
 instance FromJSON TweetedBy where
 instance FromJSON Tweet where
 instance FromJSON TwitterSearchResult where
+instance FromJSON RetweetStatus where

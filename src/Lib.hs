@@ -20,15 +20,11 @@ someFunc = do
   putStrLn ""
   let endpointResults = endpoints env manager
       displayResults = fmap (fmap displayString) endpointResults
-  traverse_ (>>= putStrLn) displayResults
-  -- putStrLn "----------------------"
-  -- mentionsTimelineAction env manager
+  traverse_ (\x -> x >>= putStrLn >> getLine) displayResults
 
 endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
-endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines, searches]
-
--- endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
--- endpoints env manager = concatMap (\f -> f env manager) [searches]
+-- endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines, searches]
+endpoints env manager = concatMap (\f -> f env manager) [userTimelines]
 
 homeTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
 homeTimelines env manager = [homeTimelineAction env manager]
@@ -39,11 +35,11 @@ mentionsTimelines env manager = [mentionsTimelineAction env manager]
 userTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
 userTimelines env manager = 
   let twitterHandles = [
-                         MentionRequest (TwitterHandle "wjlow") (TweetCount 5), 
-                         MentionRequest (TwitterHandle "KenScambler") (TweetCount 10), 
-                         MentionRequest (TwitterHandle "cwmyers") (TweetCount 2),
-                         MentionRequest (TwitterHandle "ajfitzpatrick") (TweetCount 2),
-                         MentionRequest (TwitterHandle "andrewfnewman") (TweetCount 5)
+                         -- MentionRequest (TwitterHandle "wjlow") (TweetCount 5), 
+                         MentionRequest (TwitterHandle "KenScambler") (TweetCount 10) --, 
+                         -- MentionRequest (TwitterHandle "cwmyers") (TweetCount 2),
+                         -- MentionRequest (TwitterHandle "ajfitzpatrick") (TweetCount 2),
+                         -- MentionRequest (TwitterHandle "andrewfnewman") (TweetCount 5)
                        ]
   in (userTimelineAction env manager) <$> twitterHandles
 

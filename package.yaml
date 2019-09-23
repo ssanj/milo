@@ -28,7 +28,9 @@ library:
   dependencies:
     - oauthenticated
     - bytestring
+    - text
     - aeson
+    - aeson-pretty
     - http-client
     - http-client-tls
     - http-types
