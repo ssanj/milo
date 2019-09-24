@@ -1,6 +1,7 @@
 module Milo.Format (displayString, displayJson) where
 
 import Milo.Model
+import Milo.Resolution                        (resolveReTweets)
 import Data.List                              (intercalate)
 import Data.Aeson                             (Value)
 import qualified Data.Maybe                   (maybe)
@@ -26,14 +27,13 @@ headingFormat (Mention handle)     = ANSI.onwhite $ ANSI.black (ANSI.text handle
 headingFormat (Search searchTerms) = ANSI.onwhite $ ANSI.black (ANSI.text "Search:" ANSI.<+> ANSI.text searchTerms)
 
 formatTweetColored :: Tweet -> ANSI.Doc
-formatTweetColored (Tweet created_at (TweetedBy name screen_name) retweetStatus tweetText lang) =
+formatTweetColored (Tweet created_at (TweetedBy name screen_name) _ tweetText lang) =
   let cTweetText    = ANSI.yellow (ANSI.text tweetText)
       cTweetUserSep = ANSI.text "-"
       cUser         = ANSI.green (ANSI.text $ "@" <> screen_name)
       cUserDataSep  = ANSI.text "on"
       cDate         = ANSI.onwhite $ ANSI.black (ANSI.text created_at)
-      cRetweet      = ANSI.text $ maybe "-" show retweetStatus
-      tweetDoc      = cTweetText ANSI.<+> cTweetUserSep ANSI.<+> cUser ANSI.<+> cUserDataSep ANSI.<+> cDate ANSI.<+> cRetweet
+      tweetDoc      = cTweetText ANSI.<+> cTweetUserSep ANSI.<+> cUser ANSI.<+> cUserDataSep ANSI.<+> cDate
   in tweetDoc 
 
 displayFormat :: Either TweetRetrievalError TweetOutput -> ANSI.Doc
@@ -43,5 +43,5 @@ displayFormat (Left (TweetRetrievalError heading (TwitterEndpoint endpoint) (Twi
   in title ANSI.<$$> errorMessage
 displayFormat (Right (TweetOutput heading tweets)) = 
   let title = headingFormat heading
-      tweetLine = intercalate "\n" $ (\(n, v) -> show n <> ". " <> (docToString $ formatTweetColored v)) <$> zip [1..] tweets
+      tweetLine = intercalate "\n" $ (\(n, v) -> show n <> ". " <> (docToString . formatTweetColored . resolveReTweets $ v)) <$> zip [1..] tweets
   in ANSI.linebreak ANSI.<> title ANSI.<$$> (ANSI.text tweetLine) ANSI.<> ANSI.linebreak 
