@@ -20,7 +20,10 @@ someFunc = do
   putStrLn ""
   let endpointResults = endpoints env manager
       displayResults = fmap (fmap displayString) endpointResults
-  traverse_ (\x -> x >>= putStrLn >> getLine) displayResults
+  traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
+
+pressAnyKeyToContinue :: IO ()
+pressAnyKeyToContinue = putStrLn "press any key to continue ..."
 
 endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
 endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines, searches]

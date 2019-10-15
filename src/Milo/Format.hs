@@ -39,9 +39,9 @@ formatTweetColored (Tweet created_at (TweetedBy name screen_name) _ tweetText la
 displayFormat :: Either TweetRetrievalError TweetOutput -> ANSI.Doc
 displayFormat (Left (TweetRetrievalError heading (TwitterEndpoint endpoint) (TwitterError error))) = 
   let title = headingFormat heading
-      errorMessage = ANSI.text endpoint ANSI.<+> (ANSI.text "failed due to:") ANSI.<+> ANSI.red (ANSI.text error)
+      errorMessage = ANSI.text endpoint ANSI.<+> ANSI.text "failed due to:" ANSI.<+> ANSI.red (ANSI.text error)
   in title ANSI.<$$> errorMessage
 displayFormat (Right (TweetOutput heading tweets)) = 
   let title = headingFormat heading
       tweetLine = intercalate "\n" $ (\(n, v) -> show n <> ". " <> (docToString . formatTweetColored . resolveReTweets $ v)) <$> zip [1..] tweets
-  in ANSI.linebreak ANSI.<> title ANSI.<$$> (ANSI.text tweetLine) ANSI.<> ANSI.linebreak 
+  in ANSI.linebreak ANSI.<> title ANSI.<$$> ANSI.text tweetLine ANSI.<> ANSI.linebreak 

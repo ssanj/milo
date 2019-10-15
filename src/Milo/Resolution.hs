@@ -12,7 +12,7 @@ resolveReTweets tweet@(Tweet _ _ (Just retweetStatus) tweetText _) =
 
     getFullText :: RetweetStatus -> String -> String
     getFullText (RetweetStatus retweetText (TweetedBy _ handle)) tweetText = 
-      let retweetTag = "RT @" <> (T.pack handle) <> ":"
+      let retweetTag = "RT @" <> T.pack handle <> ":"
           (custom, retweet) = T.breakOn retweetTag (T.pack tweetText)
-      in T.unpack $ T.intercalate " " [custom, retweetTag, (T.pack retweetText)]
+      in T.unpack $ T.intercalate " " [custom, retweetTag, T.pack retweetText]
 resolveReTweets tweet = tweet

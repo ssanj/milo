@@ -26,6 +26,6 @@ makeRequest manager req = do
     -- print req
     -- putStrLn $ maybe "-" show $ listToMaybe . filter (\(n, _) -> n == hAuthorization) . Client.requestHeaders $ req
     resp <- Client.httpLbs req manager
-    let responseE = eitherDecodeStrict' (LBS.toStrict $ Client.responseBody resp)
-    putStrLn $ either (\e -> "got error: " <> (show e)) displayJson responseE
-    return $ eitherDecodeStrict' (LBS.toStrict $ Client.responseBody resp)
+    let responseBS = (LBS.toStrict $ Client.responseBody resp)
+    putStrLn $ either (\e -> "got error: " <> (show e)) displayJson (eitherDecodeStrict' responseBS)
+    return $ eitherDecodeStrict' responseBS
