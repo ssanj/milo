@@ -15,19 +15,30 @@ newtype AccessTokenSecret = AccessTokenSecret { unAccessTokenSecret :: C8.ByteSt
 
 data Env = Env { _clientKey :: ClientKey, _clientSecret :: ClientSecret, _accessToken :: AccessToken, _accessTokenSecret :: AccessTokenSecret}
 
+data LiveSearch = LiveSearch !String deriving Show
+
+-- Boolean blindness?
+data MiloConfig = MiloConfig{
+  _debug :: Bool,
+  _showHomeTimeline :: Bool,
+  _showMentions :: Bool,
+  _userTimelines :: [MentionRequest],
+  _searches :: [SearchRequest]
+} deriving Show
+
 newtype RequestProvider m a = RequestProvider { getRequest :: m Client.Request }
 
-newtype TwitterHandle = TwitterHandle C8.ByteString
+newtype TwitterHandle = TwitterHandle C8.ByteString deriving Show
 
-newtype TweetCount = TweetCount Int
+newtype TweetCount = TweetCount Int deriving Show
 
-newtype SearchHitCount = SearchHitCount Int
+newtype SearchHitCount = SearchHitCount Int deriving Show
 
-newtype SearchCriteria = SearchCriteria C8.ByteString
+newtype SearchCriteria = SearchCriteria C8.ByteString deriving Show
 
-data MentionRequest = MentionRequest TwitterHandle TweetCount
+data MentionRequest = MentionRequest TwitterHandle TweetCount deriving Show
 
-data SearchRequest = SearchRequest SearchCriteria SearchHitCount
+data SearchRequest = SearchRequest SearchCriteria SearchHitCount deriving Show
 
 data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving (Generic, Show)
 

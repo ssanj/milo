@@ -15,43 +15,33 @@ import qualified Network.HTTP.Client.TLS as Client
 
 someFunc :: IO ()
 someFunc = do
-  env     <- getConfig
+  env     <- getMiloEnv
   manager <- Client.newManager tlsManager
+  let config = getMiloConfig
   putStrLn ""
-  let endpointResults = endpoints env manager
+  let endpointResults = endpoints env config manager
       displayResults = fmap (fmap displayString) endpointResults
   traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
 
 pressAnyKeyToContinue :: IO ()
 pressAnyKeyToContinue = putStrLn "press any key to continue ..."
 
-endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
-endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines, searches]
+endpoints :: Env -> MiloConfig -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+endpoints env config manager = concatMap (\f -> f env config manager) [homeTimelines, mentionsTimelines, userTimelines, searches]
 
-homeTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
-homeTimelines env manager = [homeTimelineAction env manager]
+homeTimelines :: Env -> MiloConfig -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+homeTimelines env config manager = 
+  if (_showHomeTimeline config) then [homeTimelineAction env manager] else []
 
-mentionsTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
-mentionsTimelines env manager = [mentionsTimelineAction env manager]
+mentionsTimelines :: Env -> MiloConfig -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+mentionsTimelines env config manager = 
+  if (_showMentions config) then [mentionsTimelineAction env manager] else []
 
-userTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
-userTimelines env manager = 
-  let twitterHandles = [
-                         MentionRequest (TwitterHandle "wjlow") (TweetCount 10), 
-                         MentionRequest (TwitterHandle "KenScambler") (TweetCount 15), 
-                         MentionRequest (TwitterHandle "cwmyers") (TweetCount 5),
-                         MentionRequest (TwitterHandle "ajfitzpatrick") (TweetCount 5),
-                         MentionRequest (TwitterHandle "andrewfnewman") (TweetCount 5)
-                       ]
-  in (userTimelineAction env manager) <$> twitterHandles
+userTimelines :: Env -> MiloConfig -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+userTimelines env config manager = (userTimelineAction env manager) <$> (_userTimelines config)
 
-searches :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
-searches env manager = 
-  let searches = [
-                   SearchRequest (SearchCriteria "#scala") (SearchHitCount 10),
-                   SearchRequest (SearchCriteria "#haskell") (SearchHitCount 10)
-                 ]
-  in (searchAction env manager) <$> searches
+searches :: Env -> MiloConfig -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+searches env config manager = (searchAction env manager) <$> (_searches config)
 
 tlsManager :: Client.ManagerSettings
 tlsManager = Client.tlsManagerSettings
