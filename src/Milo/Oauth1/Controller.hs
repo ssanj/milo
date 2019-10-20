@@ -45,13 +45,14 @@ performAction :: FromJSON a => Env -> Client.Manager -> RequestProvider IO a -> 
 performAction env manager reqProvider = do
   req               <- getRequest reqProvider
   let 
-      clientKey         = unClientKey . _clientKey $ env
-      clientSecret      = unClientSecret . _clientSecret $ env
-      accessToken       = unAccessToken . _accessToken $ env
-      accessTokenSecret = unAccessTokenSecret . _accessTokenSecret $ env
+      clientKey         = unClientKey . _clientKey . _env $ env
+      clientSecret      = unClientSecret . _clientSecret . _env $ env
+      accessToken       = unAccessToken . _accessToken . _env $ env
+      accessTokenSecret = unAccessTokenSecret . _accessTokenSecret . _env $ env
       clientToken       = clientOauthToken (OAuthToken clientKey) (OAuthTokenSecret clientSecret)
       clientCred        = oauthClientCred clientToken
       permToken         = permanentOauthToken (OAuthToken accessToken) (OAuthTokenSecret accessTokenSecret)
       permCred          = oauthPermanentCred permToken clientCred
+      config            = _config env
   signedReq <- signRequest permCred oserver req
-  makeRequest manager signedReq
+  makeRequest config manager signedReq

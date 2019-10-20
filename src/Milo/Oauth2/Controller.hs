@@ -21,12 +21,13 @@ import Data.Aeson.Types (parseEither)
 performAction :: FromJSON a => Env -> Client.Manager -> RequestProvider IO a -> IO (Either String a)
 performAction env manager reqProvider = do
   let 
-      clientKey         = _clientKey env
-      clientSecret      = _clientSecret env
+      clientKey         = _clientKey . _env $ env
+      clientSecret      = _clientSecret . _env$  env
       clientToken       = OAuth2ClientToken clientKey clientSecret
-  tokenResponseE <- getRequest (bearerRequestProvider clientToken) >>= makeRequest manager
+      config            = _config env
+  tokenResponseE <- getRequest (bearerRequestProvider clientToken) >>= makeRequest config manager
   case tokenResponseE of
-    Right bearer -> (addBearerTokenAuth bearer <$> getRequest reqProvider) >>= makeRequest manager
+    Right bearer -> (addBearerTokenAuth bearer <$> getRequest reqProvider) >>= makeRequest config manager
     Left error -> pure . Left $ error
 
 tap :: Show a => IO a -> (a -> IO ()) -> IO a

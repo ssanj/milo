@@ -1,21 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Milo.Config (getMiloEnv, getMiloConfig) where
+module Milo.Config (getAppEnv) where
 
-import System.Environment (getEnv)
+import qualified System.Environment as SYS
 import qualified Milo.Model as M
 import Control.Monad
 import qualified Data.ByteString.Char8 as C8
 
-getMiloEnv :: IO M.Env
-getMiloEnv = do
-  clientKey         <- M.ClientKey         <$> fromEnv "clientKey"
-  clientSecret      <- M.ClientSecret      <$> fromEnv "clientSecret"
-  accessToken       <- M.AccessToken       <$> fromEnv "accessToken"
-  accessTokenSecret <- M.AccessTokenSecret <$> fromEnv "accessTokenSecret"
-  pure $ M.Env clientKey clientSecret accessToken accessTokenSecret
+getAppEnv :: IO M.Env
+getAppEnv = M.Env <$> getMiloEnv <*> (pure getMiloConfig)
 
-fromEnv :: String -> IO C8.ByteString
-fromEnv = fmap C8.pack . getEnv
+getMiloEnv :: IO M.MiloEnv
+getMiloEnv = do
+  clientKey         <- M.ClientKey         <$> fromSystemEnv "clientKey"
+  clientSecret      <- M.ClientSecret      <$> fromSystemEnv "clientSecret"
+  accessToken       <- M.AccessToken       <$> fromSystemEnv "accessToken"
+  accessTokenSecret <- M.AccessTokenSecret <$> fromSystemEnv "accessTokenSecret"
+  pure $ M.MiloEnv clientKey clientSecret accessToken accessTokenSecret
+
+fromSystemEnv :: String -> IO C8.ByteString
+fromSystemEnv = fmap C8.pack . SYS.getEnv
 
 getMiloConfig :: M.MiloConfig
 getMiloConfig = 

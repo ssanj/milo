@@ -2,6 +2,7 @@
 
 module Milo.Request where
 
+import Control.Monad                          (when)
 import Milo.Model
 import Milo.Format                           (displayJson)
 import qualified Data.ByteString.Char8       as C8
@@ -21,11 +22,12 @@ defaultParams = Client.setQueryString [countParam, extendedTweetParam]
 defaultRequestProvider :: String -> RequestProvider IO [Tweet]
 defaultRequestProvider url = RequestProvider $ defaultParams <$> Client.parseRequest url
 
-makeRequest :: FromJSON a => Client.Manager -> Client.Request -> IO (Either String a)
-makeRequest manager req = do
+makeRequest :: FromJSON a => MiloConfig -> Client.Manager -> Client.Request -> IO (Either String a)
+makeRequest config manager req = do
     -- print req
     -- putStrLn $ maybe "-" show $ listToMaybe . filter (\(n, _) -> n == hAuthorization) . Client.requestHeaders $ req
     resp <- Client.httpLbs req manager
     let responseBS = (LBS.toStrict $ Client.responseBody resp)
-    putStrLn $ either (\e -> "got error: " <> (show e)) displayJson (eitherDecodeStrict' responseBS)
+        showDebugInfo = _debug config
+    when showDebugInfo $ putStrLn $ either (\e -> "got error: " <> (show e)) displayJson (eitherDecodeStrict' responseBS)
     return $ eitherDecodeStrict' responseBS

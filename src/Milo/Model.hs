@@ -13,7 +13,17 @@ newtype ClientSecret      = ClientSecret { unClientSecret :: C8.ByteString } der
 newtype AccessToken       = AccessToken { unAccessToken :: C8.ByteString } deriving Show
 newtype AccessTokenSecret = AccessTokenSecret { unAccessTokenSecret :: C8.ByteString } deriving Show
 
-data Env = Env { _clientKey :: ClientKey, _clientSecret :: ClientSecret, _accessToken :: AccessToken, _accessTokenSecret :: AccessTokenSecret}
+data Env = Env {
+  _env :: MiloEnv,
+  _config :: MiloConfig
+}
+
+data MiloEnv = MiloEnv { 
+  _clientKey :: ClientKey, 
+  _clientSecret :: ClientSecret, 
+  _accessToken :: AccessToken, 
+  _accessTokenSecret :: AccessTokenSecret
+} deriving Show
 
 data LiveSearch = LiveSearch !String deriving Show
 
