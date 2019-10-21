@@ -6,6 +6,7 @@ module Milo.Model where
 import GHC.Generics
 import Data.Aeson (FromJSON)
 import qualified Data.ByteString.Char8 as C8
+import qualified Data.Text as T
 import qualified Network.HTTP.Client   as Client
 
 newtype ClientKey         = ClientKey { unClientKey :: C8.ByteString } deriving Show
@@ -25,7 +26,7 @@ data MiloEnv = MiloEnv {
   _accessTokenSecret :: AccessTokenSecret
 } deriving Show
 
-data LiveSearch = LiveSearch !String deriving Show
+newtype LiveSearch = LiveSearch String deriving Show
 
 -- Boolean blindness?
 data MiloConfig = MiloConfig{
@@ -38,13 +39,13 @@ data MiloConfig = MiloConfig{
 
 newtype RequestProvider m a = RequestProvider { getRequest :: m Client.Request }
 
-newtype TwitterHandle = TwitterHandle C8.ByteString deriving Show
+newtype TwitterHandle = TwitterHandle T.Text deriving Show
 
 newtype TweetCount = TweetCount Int deriving Show
 
 newtype SearchHitCount = SearchHitCount Int deriving Show
 
-newtype SearchCriteria = SearchCriteria C8.ByteString deriving Show
+newtype SearchCriteria = SearchCriteria T.Text deriving Show
 
 data MentionRequest = MentionRequest TwitterHandle TweetCount deriving Show
 
@@ -73,7 +74,7 @@ data Tweet =
     lang :: !String
   } deriving (Generic, Show)
 
-data TwitterSearchResult = TwitterSearchResult { statuses :: [Tweet] } deriving (Generic, Show)
+newtype TwitterSearchResult = TwitterSearchResult { statuses :: [Tweet] } deriving (Generic, Show)
 
 instance FromJSON TweetedBy where
 instance FromJSON Tweet where

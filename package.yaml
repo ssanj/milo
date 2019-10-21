@@ -36,6 +36,7 @@ library:
     - http-types
     - case-insensitive
     - ansi-wl-pprint
+    - configurator
 
 executables:
   milo-exe:

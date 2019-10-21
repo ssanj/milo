@@ -8,6 +8,7 @@ import Milo.Model
 import qualified Milo.Request as R
 import Milo.Oauth2.Model
 
+import qualified Data.Text.Encoding          as T
 import qualified Data.ByteString.Char8       as C8
 import qualified Network.HTTP.Client         as Client
 import qualified Network.HTTP.Client.TLS     as Client
@@ -25,7 +26,7 @@ userRequestProvider mentionRequest =
   RequestProvider $ addQueryParams mentionRequest <$> Client.parseRequest userTimelineUrl
 
 twitterHandleParam :: TwitterHandle -> (C8.ByteString, Maybe C8.ByteString)
-twitterHandleParam (TwitterHandle tuser)= ("screen_name", Just tuser)
+twitterHandleParam (TwitterHandle tuser)= ("screen_name", Just . T.encodeUtf8 $ tuser)
 
 addQueryParams :: MentionRequest -> Client.Request -> Client.Request
 addQueryParams (MentionRequest tuser count) = Client.setQueryString [numTweets count, twitterHandleParam tuser, R.extendedTweetParam]

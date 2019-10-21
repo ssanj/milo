@@ -8,6 +8,7 @@ import Milo.Model
 import qualified Milo.Request as R
 import Milo.Oauth2.Model
 
+import qualified Data.Text.Encoding          as T
 import qualified Data.ByteString.Char8       as C8
 import qualified Network.HTTP.Client         as Client
 import qualified Network.HTTP.Client.TLS     as Client
@@ -28,7 +29,7 @@ addQueryParams :: SearchRequest -> Client.Request -> Client.Request
 addQueryParams (SearchRequest searchCriteria searchHitCount) = Client.setQueryString [numHits searchHitCount, searchParam searchCriteria, R.extendedTweetParam]
 
 searchParam :: SearchCriteria -> (C8.ByteString, Maybe C8.ByteString)
-searchParam (SearchCriteria searchCriteria) = ("q", Just searchCriteria)
+searchParam (SearchCriteria searchCriteria) = ("q", Just . T.encodeUtf8 $ searchCriteria)
 
 numHits :: SearchHitCount -> (C8.ByteString, Maybe C8.ByteString)
 numHits (SearchHitCount count) = ("count", Just . C8.pack $ show count)

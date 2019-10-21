@@ -1,13 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module Milo.Config (getAppEnv) where
 
 import qualified System.Environment as SYS
 import qualified Milo.Model as M
 import Control.Monad
 import qualified Data.ByteString.Char8 as C8
+import qualified Data.Configurator as DC
+import qualified Data.Configurator.Types as DC
+import qualified Data.Text as T
+import System.IO.Error (userError)
+import Control.Exception.Base (ioError)
 
 getAppEnv :: IO M.Env
-getAppEnv = M.Env <$> getMiloEnv <*> (pure getMiloConfig)
+getAppEnv = do
+  config <- DC.load [DC.Required "milo.conf"]
+  _ <- DC.display config
+  M.Env <$> getMiloEnv <*> getMiloConfig config
 
 getMiloEnv :: IO M.MiloEnv
 getMiloEnv = do
@@ -20,21 +29,51 @@ getMiloEnv = do
 fromSystemEnv :: String -> IO C8.ByteString
 fromSystemEnv = fmap C8.pack . SYS.getEnv
 
-getMiloConfig :: M.MiloConfig
-getMiloConfig = 
-  M.MiloConfig {
-    M._debug = False,
-    M._showHomeTimeline = False,
-    M._showMentions = False,
-    M._userTimelines = [
-      M.MentionRequest (M.TwitterHandle "wjlow")         (M.TweetCount 10), 
-      M.MentionRequest (M.TwitterHandle "KenScambler")   (M.TweetCount 15)--, 
-      -- M.MentionRequest (M.TwitterHandle "cwmyers")       (M.TweetCount 5),
-      -- M.MentionRequest (M.TwitterHandle "ajfitzpatrick") (M.TweetCount 5),
-      -- M.MentionRequest (M.TwitterHandle "andrewfnewman") (M.TweetCount 5)
-    ],
-    M._searches = [
-      M.SearchRequest (M.SearchCriteria "#scala")   (M.SearchHitCount 2),
-      M.SearchRequest (M.SearchCriteria "#haskell") (M.SearchHitCount 2)
-    ]
+getMiloConfig :: DC.Config -> IO M.MiloConfig
+getMiloConfig config = do
+  showRequest <- DC.lookupDefault False config "showRequest"
+  showHomeTimeline <- DC.lookupDefault False config "showHomeTimeline"
+  showMentions <- DC.lookupDefault False config "showMentions"
+  userTimelines <- getUserTimelines config
+  searches <- getSearches config
+  return M.MiloConfig {
+    M._debug = showRequest,
+    M._showHomeTimeline = showHomeTimeline,
+    M._showMentions = showMentions,
+    M._userTimelines = userTimelines,
+    M._searches = searches
   }
+
+getUserTimelines :: DC.Config -> IO [M.MentionRequest]
+getUserTimelines config = do
+  userNames <- DC.lookupDefault [] config "userTimelines"
+  createUserTimeline config `traverse` userNames
+
+createUserTimeline :: DC.Config -> DC.Value -> IO M.MentionRequest
+createUserTimeline config usernameValue = do
+  username <- asString usernameValue
+  handle <- DC.require config $ nested username "handle"
+  tweets <- DC.lookupDefault 1 config $ nested username "tweets"
+  pure $ M.MentionRequest (M.TwitterHandle handle) (M.TweetCount tweets)
+
+getSearches :: DC.Config -> IO [M.SearchRequest]
+getSearches config = do
+  searchNames <- DC.lookupDefault [] config "searches"
+  createSearch config `traverse` searchNames
+
+createSearch :: DC.Config -> DC.Value -> IO M.SearchRequest
+createSearch config searchNameValue = do
+  searchName <- asString searchNameValue
+  searchCriteria <- DC.require config (nested searchName "term")
+  hits <- DC.lookupDefault 1 config (nested searchName "hits")
+  return $ M.SearchRequest (M.SearchCriteria searchCriteria) (M.SearchHitCount hits)
+
+asString :: DC.Value -> IO T.Text
+asString (DC.String value) = pure value
+asString other = raiseError $ "Invalid Config Value supplied. Expected String got: " <> show other 
+
+raiseError :: String -> IO a
+raiseError error = ioError $ userError error
+
+nested :: T.Text -> T.Text -> T.Text
+nested username path = username <> "." <> path
