@@ -31,12 +31,14 @@ library:
     - text
     - aeson
     - aeson-pretty
+    - aeson-casing
     - http-client
     - http-client-tls
     - http-types
     - case-insensitive
     - ansi-wl-pprint
     - configurator
+    - yaml
 
 executables:
   milo-exe:

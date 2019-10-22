@@ -39,6 +39,14 @@ data MiloConfig = MiloConfig{
 
 newtype RequestProvider m a = RequestProvider { getRequest :: m Client.Request }
 
+newtype ConfigProvider m a = ConfigProvider {
+  loadConfig :: String -> m Env
+}
+
+data ConfiguratorConfig
+
+data YamlConfig
+
 newtype TwitterHandle = TwitterHandle T.Text deriving Show
 
 newtype TweetCount = TweetCount Int deriving Show

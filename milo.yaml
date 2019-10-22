@@ -1,0 +1,26 @@
+show-request: false
+show-home-timeline: true
+show-mentions: true
+user-timelines:
+  - name: "Jack Low"
+    handle: "wjlow"
+    tweets: 5
+  - name: "Ken Scambler"
+    handle: "KenScambler"
+    tweets: 5
+  - name: "Adam Fitzpatrick"
+    handle: "ajfitzpatrick"
+    tweets: 5
+  - name: "Chris Myers"
+    handle: "cwmyers"
+    tweets: 5
+  - name: "Andrew Newman"
+    handle: "andrewfnewman"
+    tweets: 5
+searches:
+  - title: "What's new in Scala"
+    term: "#scala"
+    hits: 10
+  - title: "What's new in Haskell"
+    term: "#haskell"
+    hits: 10
