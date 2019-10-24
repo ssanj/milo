@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -eou pipefail
+
+shellcheck --version && \
+shellcheck --color=always \
+  /app/build \
+  /app/generate-hoogle \
+  /app/get-sources \
+  /app/hoogle \
+  /app/support/*/run-*

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -euo pipefail
+
+yamllint -v && yamllint --strict -f colored .

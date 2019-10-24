@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -euo pipefail
+
+TAG="milo-yamllint:latest"
+
+docker build  -f support/yamllint/Dockerfile  -t "$TAG" .
+
+docker run "$TAG"
