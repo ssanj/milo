@@ -29,7 +29,7 @@ twitterHandleParam :: TwitterHandle -> (C8.ByteString, Maybe C8.ByteString)
 twitterHandleParam (TwitterHandle tuser)= ("screen_name", Just . T.encodeUtf8 $ tuser)
 
 addQueryParams :: MentionRequest -> Client.Request -> Client.Request
-addQueryParams (MentionRequest tuser count) = Client.setQueryString [numTweets count, twitterHandleParam tuser, R.extendedTweetParam]
+addQueryParams (MentionRequest _ tuser count) = Client.setQueryString [numTweets count, twitterHandleParam tuser, R.extendedTweetParam]
 
 numTweets :: TweetCount -> (C8.ByteString, Maybe C8.ByteString)
 numTweets (TweetCount count) = ("count", Just . C8.pack $ show count)

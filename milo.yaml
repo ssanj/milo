@@ -3,19 +3,19 @@ show-request: false
 show-home-timeline: true
 show-mentions: true
 user-timelines:
-  - name: "Jack Low"
+  - real-name: "Jack Low"
     handle: "wjlow"
     tweets: 5
-  - name: "Ken Scambler"
+  - real-name: "Ken Scambler"
     handle: "KenScambler"
     tweets: 5
-  - name: "Adam Fitzpatrick"
+  - real-name: "Adam Fitzpatrick"
     handle: "ajfitzpatrick"
     tweets: 5
-  - name: "Chris Myers"
+  - real-name: "Chris Myers"
     handle: "cwmyers"
     tweets: 5
-  - name: "Andrew Newman"
+  - real-name: "Andrew Newman"
     handle: "andrewfnewman"
     tweets: 5
 searches:

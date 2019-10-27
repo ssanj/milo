@@ -17,4 +17,4 @@ userTimelineAction env manager mentionRequest = convertResults <$> getUserTimeli
   where convertResults = bimap (TweetRetrievalError (Mention $ twitterHandler mentionRequest) (TwitterEndpoint endpoint) . TwitterError) (TweetOutput (Mention $ twitterHandler mentionRequest) )
   
 twitterHandler :: MentionRequest -> String
-twitterHandler (MentionRequest (TwitterHandle twuser) _) = "@" <> T.unpack twuser
+twitterHandler (MentionRequest (RealName realName) (TwitterHandle twuser) _) = T.unpack realName <> " (@" <> T.unpack twuser <> ")"

@@ -52,9 +52,10 @@ getUserTimelines config = do
 createUserTimeline :: DC.Config -> DC.Value -> IO M.MentionRequest
 createUserTimeline config usernameValue = do
   username <- asString usernameValue
-  handle <- DC.require config $ nested username "handle"
-  tweets <- DC.lookupDefault 1 config $ nested username "tweets"
-  pure $ M.MentionRequest (M.TwitterHandle handle) (M.TweetCount tweets)
+  realName <- DC.require config $ nested username "realName"
+  handle   <- DC.require config $ nested username "handle"
+  tweets   <- DC.lookupDefault 1 config $ nested username "tweets"
+  pure $ M.MentionRequest (M.RealName realName) (M.TwitterHandle handle) (M.TweetCount tweets)
 
 getSearches :: DC.Config -> IO [M.SearchRequest]
 getSearches config = do

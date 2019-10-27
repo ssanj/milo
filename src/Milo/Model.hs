@@ -55,7 +55,9 @@ newtype SearchHitCount = SearchHitCount Int deriving Show
 
 newtype SearchCriteria = SearchCriteria T.Text deriving Show
 
-data MentionRequest = MentionRequest TwitterHandle TweetCount deriving Show
+newtype RealName = RealName T.Text deriving Show
+
+data MentionRequest = MentionRequest RealName TwitterHandle TweetCount deriving Show
 
 data SearchRequest = SearchRequest SearchCriteria SearchHitCount deriving Show
 

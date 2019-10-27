@@ -24,7 +24,7 @@ data MiloYamlConfig = MiloYamlConfig {
 } deriving (Generic, Show)
 
 data MiloYamlUser = MiloYamlUser {
-  miloyamluserName :: T.Text,
+  miloyamluserRealName :: T.Text,
   miloyamluserHandle :: T.Text,
   miloyamluserTweets :: Int
 } deriving (Generic, Show)
@@ -83,7 +83,7 @@ instance A.FromJSON MiloYamlSearch where
 
 getUserTimelines :: MiloYamlConfig -> [M.MentionRequest]
 getUserTimelines config = 
-  (\(MiloYamlUser _ handle tweets) -> M.MentionRequest (M.TwitterHandle handle) (M.TweetCount tweets)) <$> miloyamlconfigUserTimelines config
+  (\(MiloYamlUser realName handle tweets) -> M.MentionRequest (M.RealName realName) (M.TwitterHandle handle) (M.TweetCount tweets)) <$> miloyamlconfigUserTimelines config
 
 getSearches :: MiloYamlConfig -> [M.SearchRequest]
 getSearches config = 
