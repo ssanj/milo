@@ -36,12 +36,14 @@ getMiloConfig config = do
   showMentions <- DC.lookupDefault False config "showMentions"
   userTimelines <- getUserTimelines config
   searches <- getSearches config
+  twitterWebUrl <- getTwitterWebUrl config
   return M.MiloConfig {
     M._debug = showRequest,
     M._showHomeTimeline = showHomeTimeline,
     M._showMentions = showMentions,
     M._userTimelines = userTimelines,
-    M._searches = searches
+    M._searches = searches,
+    M._twitterWebUrl = twitterWebUrl
   }
 
 getUserTimelines :: DC.Config -> IO [M.MentionRequest]
@@ -68,6 +70,14 @@ createSearch config searchNameValue = do
   searchCriteria <- DC.require config (nested searchName "term")
   hits <- DC.lookupDefault 1 config (nested searchName "hits")
   return $ M.SearchRequest (M.SearchCriteria searchCriteria) (M.SearchHitCount hits)
+
+getTwitterWebUrl :: DC.Config -> IO M.TwitterWebUrl
+getTwitterWebUrl config = do
+  twitterWebUrl <- DC.require config "twitterWebUrl"
+  createTwitterWebUrl config twitterWebUrl
+
+createTwitterWebUrl :: DC.Config -> DC.Value -> IO M.TwitterWebUrl
+createTwitterWebUrl config searchNameValue = pure . M.TwitterWebUrl $ "fix me"
 
 asString :: DC.Value -> IO T.Text
 asString (DC.String value) = pure value

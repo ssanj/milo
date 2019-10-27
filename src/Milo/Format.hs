@@ -12,8 +12,8 @@ import qualified Data.Text.Encoding           as T
 import qualified Text.PrettyPrint.ANSI.Leijen as ANSI
 import Data.Aeson.Encode.Pretty               as Pretty
 
-displayString :: Either TweetRetrievalError TweetOutput -> String
-displayString = docToString . displayFormat
+displayString :: TwitterWebUrl -> Either TweetRetrievalError TweetOutput -> String
+displayString twu = docToString . displayFormat twu
 
 displayJson :: Value -> String
 displayJson = T.unpack . T.decodeUtf8 . LBS.toStrict . Pretty.encodePretty' (Pretty.defConfig { Pretty.confIndent = Pretty.Spaces 2 })
@@ -26,22 +26,23 @@ headingFormat (Heading heading)    = ANSI.onwhite $ ANSI.black (ANSI.text headin
 headingFormat (Mention handle)     = ANSI.onwhite $ ANSI.black (ANSI.text handle)
 headingFormat (Search searchTerms) = ANSI.onwhite $ ANSI.black (ANSI.text "Search:" ANSI.<+> ANSI.text searchTerms)
 
-formatTweetColored :: Tweet -> ANSI.Doc
-formatTweetColored (Tweet created_at (TweetedBy name screen_name) _ tweetText lang) =
+formatTweetColored :: TwitterWebUrl -> Tweet -> ANSI.Doc
+formatTweetColored (TwitterWebUrl webUrl) (Tweet created_at (TweetedBy name screen_name) id _ tweetText lang) =
   let cTweetText    = ANSI.yellow (ANSI.text tweetText)
       cTweetUserSep = ANSI.text "-"
       cUser         = ANSI.green (ANSI.text $ "@" <> screen_name)
       cUserDataSep  = ANSI.text "on"
       cDate         = ANSI.onwhite $ ANSI.black (ANSI.text created_at)
-      tweetDoc      = cTweetText ANSI.<+> cTweetUserSep ANSI.<+> cUser ANSI.<+> cUserDataSep ANSI.<+> cDate
+      cUrl          = ANSI.text $ T.unpack webUrl <> "/" <> T.unpack id --TODO: Handle case where trailing / is not given
+      tweetDoc      = cTweetText ANSI.<+> cTweetUserSep ANSI.<+> cUser ANSI.<+> cUserDataSep ANSI.<+> cDate ANSI.<+> cUrl
   in tweetDoc 
 
-displayFormat :: Either TweetRetrievalError TweetOutput -> ANSI.Doc
-displayFormat (Left (TweetRetrievalError heading (TwitterEndpoint endpoint) (TwitterError error))) = 
+displayFormat :: TwitterWebUrl -> Either TweetRetrievalError TweetOutput -> ANSI.Doc
+displayFormat _ (Left (TweetRetrievalError heading (TwitterEndpoint endpoint) (TwitterError error))) = 
   let title = headingFormat heading
       errorMessage = ANSI.text endpoint ANSI.<+> ANSI.text "failed due to:" ANSI.<+> ANSI.red (ANSI.text error)
   in title ANSI.<$$> errorMessage
-displayFormat (Right (TweetOutput heading tweets)) = 
+displayFormat twitterWebUrl (Right (TweetOutput heading tweets)) = 
   let title = headingFormat heading
-      tweetLine = intercalate "\n" $ (\(n, v) -> show n <> ". " <> (docToString . formatTweetColored . resolveReTweets $ v)) <$> zip [1..] tweets
+      tweetLine = intercalate "\n" $ (\(n, v) -> show n <> ". " <> (docToString . formatTweetColored twitterWebUrl . resolveReTweets $ v)) <$> zip [1..] tweets
   in ANSI.linebreak ANSI.<> title ANSI.<$$> ANSI.text tweetLine ANSI.<> ANSI.linebreak 

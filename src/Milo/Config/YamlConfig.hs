@@ -20,7 +20,8 @@ data MiloYamlConfig = MiloYamlConfig {
   miloyamlconfigShowHomeTimeline :: Bool,
   miloyamlconfigShowMentions :: Bool,
   miloyamlconfigUserTimelines :: [MiloYamlUser],
-  miloyamlconfigSearches :: [MiloYamlSearch]
+  miloyamlconfigSearches :: [MiloYamlSearch],
+  miloyamlconfigTwitterWebUrl :: T.Text
 } deriving (Generic, Show)
 
 data MiloYamlUser = MiloYamlUser {
@@ -64,12 +65,14 @@ getMiloConfig config =
       showMentions     = miloyamlconfigShowMentions config
       userTimelines    = getUserTimelines config
       searches         = getSearches config
+      twitterWebUrl    = miloyamlconfigTwitterWebUrl config
   in M.MiloConfig {
        M._debug = showRequest,
        M._showHomeTimeline = showHomeTimeline,
        M._showMentions = showMentions,
        M._userTimelines = userTimelines,
-       M._searches = searches
+       M._searches = searches,
+       M._twitterWebUrl = M.TwitterWebUrl twitterWebUrl
      }
 
 instance A.FromJSON MiloYamlConfig where

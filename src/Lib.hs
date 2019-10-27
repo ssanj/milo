@@ -19,7 +19,8 @@ someFunc = do
   manager <- Client.newManager tlsManager
   putStrLn ""
   let endpointResults = endpoints appEnv manager
-      displayResults = fmap (fmap displayString) endpointResults
+      twitterWebUrl = _twitterWebUrl . _config $ appEnv
+      displayResults = fmap (fmap $ displayString twitterWebUrl) endpointResults
   traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
 
 pressAnyKeyToContinue :: IO ()

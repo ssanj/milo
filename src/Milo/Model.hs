@@ -28,13 +28,16 @@ data MiloEnv = MiloEnv {
 
 newtype LiveSearch = LiveSearch String deriving Show
 
+newtype TwitterWebUrl = TwitterWebUrl T.Text deriving Show
+
 -- Boolean blindness?
 data MiloConfig = MiloConfig{
   _debug :: Bool,
   _showHomeTimeline :: Bool,
   _showMentions :: Bool,
   _userTimelines :: [MentionRequest],
-  _searches :: [SearchRequest]
+  _searches :: [SearchRequest],
+  _twitterWebUrl :: TwitterWebUrl
 } deriving Show
 
 newtype RequestProvider m a = RequestProvider { getRequest :: m Client.Request }
@@ -79,6 +82,7 @@ data Tweet =
   Tweet { 
     created_at :: !String, 
     user :: TweetedBy,
+    id_str :: !T.Text,
     retweeted_status :: Maybe RetweetStatus,
     full_text :: !String, 
     lang :: !String
