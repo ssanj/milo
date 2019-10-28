@@ -22,9 +22,9 @@ docToString :: ANSI.Doc -> String
 docToString doc = ANSI.displayS (ANSI.renderPretty 0.4 80 doc) ""
   
 headingFormat :: HeadingType -> ANSI.Doc
-headingFormat (Heading heading)    = ANSI.onwhite $ ANSI.black (ANSI.text heading)
-headingFormat (Mention handle)     = ANSI.onwhite $ ANSI.black (ANSI.text handle)
-headingFormat (Search searchTerms) = ANSI.onwhite $ ANSI.black (ANSI.text "Search:" ANSI.<+> ANSI.text searchTerms)
+headingFormat (Heading heading)    = ANSI.underline $ ANSI.white (ANSI.text heading)
+headingFormat (Mention handle)     = ANSI.underline $ ANSI.white (ANSI.text handle)
+headingFormat (Search searchTerms) = ANSI.underline $ ANSI.white (ANSI.text "Search:" ANSI.<+> ANSI.text searchTerms)
 
 formatTweetColored :: TwitterWebUrl -> Tweet -> ANSI.Doc
 formatTweetColored (TwitterWebUrl webUrl) (Tweet created_at (TweetedBy name screen_name) id _ tweetText lang) =
@@ -32,7 +32,7 @@ formatTweetColored (TwitterWebUrl webUrl) (Tweet created_at (TweetedBy name scre
       cTweetUserSep = ANSI.text "-"
       cUser         = ANSI.green (ANSI.text $ "@" <> screen_name)
       cUserDataSep  = ANSI.text "on"
-      cDate         = ANSI.onwhite $ ANSI.black (ANSI.text created_at)
+      cDate         = ANSI.white (ANSI.text created_at)
       cUrl          = ANSI.text $ T.unpack webUrl <> "/" <> T.unpack id --TODO: Handle case where trailing / is not given
       tweetDoc      = cTweetText ANSI.<+> cTweetUserSep ANSI.<+> cUser ANSI.<+> cUserDataSep ANSI.<+> cDate ANSI.<+> cUrl
   in tweetDoc 
@@ -44,5 +44,5 @@ displayFormat _ (Left (TweetRetrievalError heading (TwitterEndpoint endpoint) (T
   in title ANSI.<$$> errorMessage
 displayFormat twitterWebUrl (Right (TweetOutput heading tweets)) = 
   let title = headingFormat heading
-      tweetLine = intercalate "\n" $ (\(n, v) -> show n <> ". " <> (docToString . formatTweetColored twitterWebUrl . resolveReTweets $ v)) <$> zip [1..] tweets
+      tweetLine = intercalate "\n\n" $ (\(n, v) -> show n <> ". " <> (docToString . formatTweetColored twitterWebUrl . resolveReTweets $ v)) <$> zip [1..] tweets
   in ANSI.linebreak ANSI.<> title ANSI.<$$> ANSI.text tweetLine ANSI.<> ANSI.linebreak 
