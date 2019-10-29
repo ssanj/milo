@@ -37,8 +37,8 @@ library:
     - http-types
     - case-insensitive
     - ansi-wl-pprint
-    - configurator
     - yaml
+    - vector
 
 executables:
   milo-exe:

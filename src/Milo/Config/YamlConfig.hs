@@ -19,6 +19,7 @@ data MiloYamlConfig = MiloYamlConfig {
   miloyamlconfigShowRequest :: Bool,
   miloyamlconfigShowHomeTimeline :: Bool,
   miloyamlconfigShowMentions :: Bool,
+  miloyamlconfigShowDirectMessages :: Bool,
   miloyamlconfigUserTimelines :: [MiloYamlUser],
   miloyamlconfigSearches :: [MiloYamlSearch],
   miloyamlconfigTwitterWebUrl :: T.Text
@@ -60,19 +61,21 @@ fromSystemEnv = fmap C8.pack . SYS.getEnv
 
 getMiloConfig :: MiloYamlConfig  -> M.MiloConfig
 getMiloConfig config = 
-  let showRequest      = miloyamlconfigShowRequest config
-      showHomeTimeline = miloyamlconfigShowHomeTimeline config
-      showMentions     = miloyamlconfigShowMentions config
-      userTimelines    = getUserTimelines config
-      searches         = getSearches config
-      twitterWebUrl    = miloyamlconfigTwitterWebUrl config
+  let showRequest        = miloyamlconfigShowRequest config
+      showHomeTimeline   = miloyamlconfigShowHomeTimeline config
+      showMentions       = miloyamlconfigShowMentions config
+      showDirectMessages = miloyamlconfigShowDirectMessages config
+      userTimelines      = getUserTimelines config
+      searches           = getSearches config
+      twitterWebUrl      = miloyamlconfigTwitterWebUrl config
   in M.MiloConfig {
-       M._debug = showRequest,
-       M._showHomeTimeline = showHomeTimeline,
-       M._showMentions = showMentions,
-       M._userTimelines = userTimelines,
-       M._searches = searches,
-       M._twitterWebUrl = M.TwitterWebUrl twitterWebUrl
+       M._debug              = showRequest,
+       M._showHomeTimeline   = showHomeTimeline,
+       M._showMentions       = showMentions,
+       M._showDirectMessages = showDirectMessages,
+       M._userTimelines      = userTimelines,
+       M._searches           = searches,
+       M._twitterWebUrl      = M.TwitterWebUrl twitterWebUrl
      }
 
 instance A.FromJSON MiloYamlConfig where

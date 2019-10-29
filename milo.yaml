@@ -1,7 +1,10 @@
 ---
-show-request: false
+show-request: true
 show-home-timeline: true
 show-mentions: true
+show-direct-messages: true
+# show-user-timelines: true
+# show-searches: true
 user-timelines:
   - real-name: "Jack Low"
     handle: "wjlow"

@@ -5,26 +5,35 @@ module Lib where
 import Milo.Config
 import Milo.Model
 import Data.Foldable                     (traverse_)
-import Milo.Format                       (displayString)
+import Milo.Format                       (displayString, displayJson)
 import Milo.HomeTimeline.Controller      (homeTimelineAction)
 import Milo.MentionsTimeline.Controller  (mentionsTimelineAction)
+import Milo.DirectMessage.Controller     (directMessagesAction)
 import Milo.UserTimeline.Controller      (userTimelineAction)
 import Milo.Search.Controller            (searchAction)
 import qualified Network.HTTP.Client     as Client
 import qualified Network.HTTP.Client.TLS as Client
+import Data.Aeson (Value)
+import Data.List (intercalate)
 
 someFunc :: IO ()
 someFunc = do
   appEnv  <- getAppEnv
   manager <- Client.newManager tlsManager
   putStrLn ""
-  let endpointResults = endpoints appEnv manager
-      twitterWebUrl = _twitterWebUrl . _config $ appEnv
-      displayResults = fmap (fmap $ displayString twitterWebUrl) endpointResults
-  traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
+  dms <- directMessages appEnv manager
+  let results = either show show dms
+  putStrLn results
+      --let  endpointResults = endpoints appEnv manager
+      -- twitterWebUrl   = _twitterWebUrl . _config $ appEnv
+      -- displayResults  = fmap (fmap $ displayString twitterWebUrl) endpointResults
+  -- traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
 
 pressAnyKeyToContinue :: IO ()
 pressAnyKeyToContinue = putStrLn "press any key to continue ..."
+
+directMessages :: Env -> Client.Manager -> IO (Either TweetRetrievalError DirectMessages)
+directMessages env manager = directMessagesAction env manager
 
 endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
 endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines, searches]
