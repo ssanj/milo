@@ -5,7 +5,7 @@ module Lib where
 import Milo.Config
 import Milo.Model
 import Data.Foldable                     (traverse_)
-import Milo.Format                       (displayString, displayJson)
+import Milo.Format                       (displayString, displayJson, displayDirectMessageString)
 import Milo.HomeTimeline.Controller      (homeTimelineAction)
 import Milo.MentionsTimeline.Controller  (mentionsTimelineAction)
 import Milo.DirectMessage.Controller     (directMessagesAction)
@@ -15,19 +15,20 @@ import qualified Network.HTTP.Client     as Client
 import qualified Network.HTTP.Client.TLS as Client
 import Data.Aeson (Value)
 import Data.List (intercalate)
+import Control.Monad (void)
 
 someFunc :: IO ()
 someFunc = do
   appEnv  <- getAppEnv
   manager <- Client.newManager tlsManager
   putStrLn ""
-  dms <- directMessages appEnv manager
-  let results = either show show dms
-  putStrLn results
-      --let  endpointResults = endpoints appEnv manager
-      -- twitterWebUrl   = _twitterWebUrl . _config $ appEnv
-      -- displayResults  = fmap (fmap $ displayString twitterWebUrl) endpointResults
-  -- traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
+  _dmsE <- directMessages appEnv manager
+  let twitterWebUrl = _twitterWebUrl . _config $ appEnv
+      directMessageResults = displayDirectMessageString twitterWebUrl _dmsE
+  putStrLn directMessageResults >> pressAnyKeyToContinue >> void getChar
+  let endpointResults = endpoints appEnv manager
+      displayResults  = fmap (fmap $ displayString twitterWebUrl) endpointResults
+  traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
 
 pressAnyKeyToContinue :: IO ()
 pressAnyKeyToContinue = putStrLn "press any key to continue ..."
