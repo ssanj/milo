@@ -12,7 +12,7 @@ import Data.List (intercalate)
 endpoint :: String
 endpoint = "User Timeline"
 
-userTimelineAction :: Env -> Client.Manager -> MentionRequest -> IO (Either TweetRetrievalError TweetOutput)
+userTimelineAction :: Env -> Client.Manager -> MentionRequest -> TweetResultIO Tweet
 userTimelineAction env manager mentionRequest = convertResults <$> getUserTimeline env manager mentionRequest
   where convertResults = bimap (TweetRetrievalError (Mention $ twitterHandler mentionRequest) (TwitterEndpoint endpoint) . TwitterError) (TweetOutput (Mention $ twitterHandler mentionRequest) )
   

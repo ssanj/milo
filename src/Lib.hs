@@ -33,24 +33,24 @@ someFunc = do
 pressAnyKeyToContinue :: IO ()
 pressAnyKeyToContinue = putStrLn "press any key to continue ..."
 
-directMessages :: Env -> Client.Manager -> IO (Either TweetRetrievalError DirectMessages)
+directMessages :: Env -> Client.Manager -> TweetResultIO DirectMessage
 directMessages env manager = directMessagesAction env manager
 
-endpoints :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+endpoints :: Env -> Client.Manager -> [TweetResultIO Tweet]
 endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines, searches]
 
-homeTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+homeTimelines :: Env -> Client.Manager -> [TweetResultIO Tweet]
 homeTimelines env manager = 
   if (_showHomeTimeline . _config $ env) then [homeTimelineAction env manager] else []
 
-mentionsTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+mentionsTimelines :: Env -> Client.Manager -> [TweetResultIO Tweet]
 mentionsTimelines env manager = 
   if (_showMentions . _config $ env) then [mentionsTimelineAction env manager] else []
 
-userTimelines :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+userTimelines :: Env -> Client.Manager -> [TweetResultIO Tweet]
 userTimelines env manager = (userTimelineAction env manager) <$> (_userTimelines . _config $ env)
 
-searches :: Env -> Client.Manager -> [IO (Either TweetRetrievalError TweetOutput)]
+searches :: Env -> Client.Manager -> [TweetResultIO Tweet]
 searches env manager = (searchAction env manager) <$> (_searches . _config $ env)
 
 tlsManager :: Client.ManagerSettings

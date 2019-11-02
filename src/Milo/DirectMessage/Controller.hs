@@ -10,6 +10,6 @@ import Milo.Format
 endpoint :: String
 endpoint = "Direct Messages"
 
-directMessagesAction :: Env -> Client.Manager -> IO (Either TweetRetrievalError DirectMessages)
+directMessagesAction :: Env -> Client.Manager -> TweetResultIO DirectMessage
 directMessagesAction env manager = convertResults <$> getDirectMessages env manager
-  where convertResults = bimap (\e -> TweetRetrievalError (Heading endpoint) (TwitterEndpoint endpoint) (TwitterError e)) (id)
+  where convertResults = bimap (\e -> TweetRetrievalError (Heading endpoint) (TwitterEndpoint endpoint) (TwitterError e)) (TweetOutput (Heading "Direct Messages") . messages)

@@ -11,7 +11,7 @@ import Milo.Format
 endpoint :: String
 endpoint = "Search"
 
-searchAction :: Env -> Client.Manager -> SearchRequest -> IO (Either TweetRetrievalError TweetOutput)
+searchAction :: Env -> Client.Manager -> SearchRequest -> TweetResultIO Tweet
 searchAction env manager searchRequest = convertResults <$> getSearch env manager searchRequest
   where convertResults = bimap (TweetRetrievalError (Search $ getSearchCriteria searchRequest) (TwitterEndpoint endpoint) . TwitterError) (TweetOutput (Search $ getSearchCriteria searchRequest) . statuses)
         getSearchCriteria (SearchRequest (SearchCriteria searchCriteria) _) = T.unpack searchCriteria

@@ -10,6 +10,6 @@ import Data.List (intercalate)
 endpoint :: String
 endpoint = "Home Timeline"
 
-homeTimelineAction :: Env -> Client.Manager -> IO (Either TweetRetrievalError TweetOutput)
+homeTimelineAction :: Env -> Client.Manager -> TweetResultIO Tweet
 homeTimelineAction env manager = convertResults <$> getHomeTimeline env manager
   where convertResults = bimap (\e -> TweetRetrievalError (Heading endpoint) (TwitterEndpoint endpoint) (TwitterError e)) (TweetOutput (Heading endpoint) )

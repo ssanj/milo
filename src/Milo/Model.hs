@@ -10,6 +10,7 @@ import qualified Data.ByteString.Char8 as C8
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client   as Client
+-- import Data.Functor.Identity (Identity)
 
 newtype ClientKey         = ClientKey { unClientKey :: C8.ByteString } deriving Show
 newtype ClientSecret      = ClientSecret { unClientSecret :: C8.ByteString } deriving Show
@@ -71,7 +72,11 @@ data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving 
 
 data HeadingType = Heading String | Mention String | Search String deriving Show
 
-data TweetOutput = TweetOutput HeadingType [Tweet]
+data TweetOutput f a = TweetOutput HeadingType (f a)
+
+type TweetResultIO a = IO (Either TweetRetrievalError (TweetOutput [] a))
+
+type TweetResult a = Either TweetRetrievalError (TweetOutput [] a)
 
 newtype TwitterEndpoint = TwitterEndpoint String deriving Show
 

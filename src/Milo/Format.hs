@@ -15,10 +15,10 @@ import Data.Aeson.Encode.Pretty               as Pretty
 -- generisize this
 -- what behaviour does l need?
 -- displayString :: (Formatting a, Formatting l) => TwitterWebUrl -> Either l a -> String
-displayString :: TwitterWebUrl -> Either TweetRetrievalError TweetOutput -> String
+displayString :: TwitterWebUrl -> TweetResult Tweet -> String
 displayString twu = docToString . displayFormat twu
 
-displayDirectMessageString :: TwitterWebUrl -> Either TweetRetrievalError DirectMessages -> String
+displayDirectMessageString :: TwitterWebUrl -> TweetResult DirectMessage -> String
 displayDirectMessageString twu = docToString . displayDirectMessageFormat twu
 
 displayJson :: Value -> String
@@ -58,14 +58,14 @@ formatDMColored (TwitterWebUrl webUrl) (DirectMessage created_at id (DirectMessa
 
 -- generisize this
 -- (Formatting a, Formatting l) => TwitterWebUrl -> Either l a -> ANSI.Doc
-displayDirectMessageFormat :: TwitterWebUrl -> Either TweetRetrievalError DirectMessages -> ANSI.Doc
+displayDirectMessageFormat :: TwitterWebUrl -> TweetResult DirectMessage -> ANSI.Doc
 displayDirectMessageFormat _ (Left tweetRetrievalError) = displayFormatTweetRetrievalError tweetRetrievalError
-displayDirectMessageFormat twitterWebUrl (Right (DirectMessages dms)) = 
+displayDirectMessageFormat twitterWebUrl (Right (TweetOutput heading dms)) = 
   let title = headingFormat $ Heading "Direct Messages"
       dmLine = intercalate "\n\n" $ (\(n, v) -> show n <> ". " <> (docToString . formatDMColored twitterWebUrl $ v)) <$> zip [1..] dms
   in ANSI.linebreak ANSI.<> title ANSI.<$$> ANSI.text dmLine ANSI.<> ANSI.linebreak 
 
-displayFormat :: TwitterWebUrl -> Either TweetRetrievalError TweetOutput -> ANSI.Doc
+displayFormat :: TwitterWebUrl -> TweetResult Tweet -> ANSI.Doc
 displayFormat _ (Left tweetRetrievalError) = displayFormatTweetRetrievalError tweetRetrievalError
 displayFormat twitterWebUrl (Right (TweetOutput heading tweets)) = 
   let title = headingFormat heading
