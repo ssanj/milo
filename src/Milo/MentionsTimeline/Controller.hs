@@ -13,4 +13,5 @@ mentionsTimelineAction :: Env -> Client.Manager -> TweetResultIO Tweet
 mentionsTimelineAction env manager = convertResults <$> getMentionsTimeline env manager
   where 
         heading = Heading MentionHeading endpoint
-        convertResults = bimap (\e -> TweetRetrievalError heading (TwitterEndpoint endpoint) (TwitterError e)) (TweetOutput heading)
+        convertResults = bimap (\e -> TweetRetrievalError heading (TwitterEndpoint endpoint) (TwitterError e)) 
+                               (TweetOutput heading)
