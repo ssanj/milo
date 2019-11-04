@@ -9,8 +9,7 @@ import Data.Aeson (FromJSON, parseJSON, (.:), (.:?), withObject, withArray)
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.Text as T
 import qualified Data.Vector as V
-import qualified Network.HTTP.Client   as Client
--- import Data.Functor.Identity (Identity)
+import qualified Network.HTTP.Client as Client
 
 newtype ClientKey         = ClientKey { unClientKey :: C8.ByteString } deriving Show
 newtype ClientSecret      = ClientSecret { unClientSecret :: C8.ByteString } deriving Show
@@ -70,13 +69,15 @@ data SearchRequest = SearchRequest SearchCriteria SearchHitCount deriving Show
 
 data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving (Generic, Show)
 
-data HeadingType = Heading String | Mention String | Search String deriving Show
+data HeadingType = MentionHeading | UserTimelineHeading | HomeTimelineHeading | DirectMessageHeading | SearchHeading deriving Show
 
-data TweetOutput f a = TweetOutput HeadingType (f a)
+data Heading = Heading HeadingType String deriving Show
 
-type TweetResultIO a = IO (Either TweetRetrievalError (TweetOutput [] a))
+data TweetOutput f a = TweetOutput Heading (f a)
 
-type TweetResult a = Either TweetRetrievalError (TweetOutput [] a)
+type TweetResultIO a = IO (Either (TweetRetrievalError) (TweetOutput [] a))
+
+type TweetResult a = Either (TweetRetrievalError) (TweetOutput [] a)
 
 newtype TwitterEndpoint = TwitterEndpoint String deriving Show
 
@@ -84,7 +85,7 @@ newtype TwitterError = TwitterError String deriving Show
 
 data RetweetStatus = RetweetStatus { full_text :: !String, user :: TweetedBy }  deriving (Generic, Show)
 
-data TweetRetrievalError = TweetRetrievalError HeadingType TwitterEndpoint TwitterError deriving Show
+data TweetRetrievalError = TweetRetrievalError Heading TwitterEndpoint TwitterError deriving Show
 
 data Tweet = 
   Tweet { 

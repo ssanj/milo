@@ -5,7 +5,8 @@ module Lib where
 import Milo.Config
 import Milo.Model
 import Data.Foldable                     (traverse_)
-import Milo.Format                       (displayString, displayJson, displayDirectMessageString)
+import Milo.Format.Format                (docToString)
+import Milo.Format.Model                 (displayFormat)
 import Milo.HomeTimeline.Controller      (homeTimelineAction)
 import Milo.MentionsTimeline.Controller  (mentionsTimelineAction)
 import Milo.DirectMessage.Controller     (directMessagesAction)
@@ -13,6 +14,7 @@ import Milo.UserTimeline.Controller      (userTimelineAction)
 import Milo.Search.Controller            (searchAction)
 import qualified Network.HTTP.Client     as Client
 import qualified Network.HTTP.Client.TLS as Client
+import qualified Text.PrettyPrint.ANSI.Leijen as ANSI
 import Data.Aeson (Value)
 import Data.List (intercalate)
 import Control.Monad (void)
@@ -24,10 +26,10 @@ someFunc = do
   putStrLn ""
   _dmsE <- directMessages appEnv manager
   let twitterWebUrl = _twitterWebUrl . _config $ appEnv
-      directMessageResults = displayDirectMessageString twitterWebUrl _dmsE
+      directMessageResults = docToString . displayFormat twitterWebUrl $ _dmsE
   putStrLn directMessageResults >> pressAnyKeyToContinue >> void getChar
   let endpointResults = endpoints appEnv manager
-      displayResults  = fmap (fmap $ displayString twitterWebUrl) endpointResults
+      displayResults  = fmap (fmap $ docToString . displayFormat twitterWebUrl) endpointResults
   traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
 
 pressAnyKeyToContinue :: IO ()

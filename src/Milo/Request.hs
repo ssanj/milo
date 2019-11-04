@@ -2,12 +2,12 @@
 
 module Milo.Request where
 
-import Control.Monad                          (when)
+import Control.Monad                   (when)
 import Milo.Model
-import Milo.Format                           (displayJson)
-import qualified Data.ByteString.Char8       as C8
-import qualified Network.HTTP.Client         as Client
-import qualified Data.ByteString.Lazy        as LBS
+import Milo.Format.Format              (displayJson)
+import qualified Data.ByteString.Char8 as C8
+import qualified Network.HTTP.Client   as Client
+import qualified Data.ByteString.Lazy  as LBS
 import Data.Aeson (FromJSON, eitherDecodeStrict', Value)
 
 countParam :: (C8.ByteString, Maybe C8.ByteString)

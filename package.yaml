@@ -39,7 +39,9 @@ library:
     - ansi-wl-pprint
     - yaml
     - vector
-
+  ghc-options:
+  - -fprint-potential-instances
+  
 executables:
   milo-exe:
     main:                Main.hs
