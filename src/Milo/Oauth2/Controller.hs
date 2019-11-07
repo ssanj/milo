@@ -1,22 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Milo.Oauth2.Controller where
+module Milo.Oauth2.Controller (performAction) where
 
-import qualified Network.OAuth               as OA
-import qualified Network.OAuth.Types.Params  as OA
 import qualified Data.ByteString.Char8       as C8
-import qualified Data.ByteString.Lazy        as LS
 import qualified Network.HTTP.Client         as Client
-import qualified Network.HTTP.Client.TLS     as Client
 import qualified Network.HTTP.Types          as Client
-import qualified Network.HTTP.Types.Header   as Client
-import Data.CaseInsensitive (mk)
-import Milo.Config
 import Milo.Model
+import Milo.Config.Model
 import Milo.Oauth2.Model
 import Milo.Request (makeRequest)
-import Data.Aeson (FromJSON, Value, eitherDecodeStrict', Result(..), fromJSON)
-import Data.Aeson.Types (parseEither)
+import Data.Aeson (FromJSON)
 
 performAction :: FromJSON a => Env -> Client.Manager -> RequestProvider IO a -> IO (Either String a)
 performAction env manager reqProvider = do
@@ -28,12 +21,8 @@ performAction env manager reqProvider = do
   tokenResponseE <- getRequest (bearerRequestProvider clientToken) >>= makeRequest config manager
   case tokenResponseE of
     Right bearer -> (addBearerTokenAuth bearer <$> getRequest reqProvider) >>= makeRequest config manager
-    Left error -> pure . Left $ error
+    Left requestError -> pure . Left $ requestError
 
-tap :: Show a => IO a -> (a -> IO ()) -> IO a
-tap ioa f = ioa >>= f >> ioa
-
---- access token retrieval 
 tokenUrl :: String
 tokenUrl = "https://api.twitter.com/oauth2/token"
 
@@ -42,7 +31,7 @@ bearerRequestProvider oauth2ClientToken =
   RequestProvider $ addBasicAuth oauth2ClientToken . addTokenFormParams <$> Client.parseRequest tokenUrl
 
 addBasicAuth :: OAuth2ClientToken -> Client.Request -> Client.Request
-addBasicAuth (OAuth2ClientToken (ClientKey key) (ClientSecret secret)) = Client.applyBasicAuth key secret
+addBasicAuth (OAuth2ClientToken (ClientKey theKey) (ClientSecret theSecret)) = Client.applyBasicAuth theKey theSecret
 
 addBearerTokenAuth :: BearerToken -> Client.Request -> Client.Request
 addBearerTokenAuth (BearerToken _ accessToken) req = 

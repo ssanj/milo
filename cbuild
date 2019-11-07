@@ -1,0 +1,3 @@
+#!/bin/bash
+
+stack clean && stack build --fast  --haddock-deps --file-watch

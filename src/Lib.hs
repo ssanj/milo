@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Lib where
+module Lib (runApp) where
 
 import Milo.Config
 import Milo.Model
+import Milo.Config.Model
 import Data.Foldable                     (traverse_)
 import Milo.Format.Format                (docToString)
 import Milo.Format.Model                 (displayFormat)
@@ -14,13 +15,10 @@ import Milo.UserTimeline.Controller      (userTimelineAction)
 import Milo.Search.Controller            (searchAction)
 import qualified Network.HTTP.Client     as Client
 import qualified Network.HTTP.Client.TLS as Client
-import qualified Text.PrettyPrint.ANSI.Leijen as ANSI
-import Data.Aeson (Value)
-import Data.List (intercalate)
 import Control.Monad (void)
 
-someFunc :: IO ()
-someFunc = do
+runApp :: IO ()
+runApp = do
   appEnv  <- getAppEnv
   manager <- Client.newManager tlsManager
   putStrLn ""

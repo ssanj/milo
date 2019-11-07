@@ -3,12 +3,11 @@
 module Milo.MentionsTimeline.Service (getMentionsTimeline) where
 
 import Milo.Oauth1.Controller
-import Milo.Config
 import Milo.Model
+import Milo.Config.Model (Env)
 import Milo.Request
 
 import qualified Network.HTTP.Client         as Client
-import qualified Network.HTTP.Client.TLS     as Client
 
 getMentionsTimeline :: Env -> Client.Manager -> IO (Either String [Tweet])
 getMentionsTimeline env manager = performAction env manager $ defaultRequestProvider mentionsTimelineUrl

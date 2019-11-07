@@ -3,16 +3,13 @@
 module Milo.UserTimeline.Service (getUserTimeline) where
 
 import Milo.Oauth2.Controller
-import Milo.Config
 import Milo.Model
+import Milo.Config.Model (Env)
 import qualified Milo.Request as R
-import Milo.Oauth2.Model
 
 import qualified Data.Text.Encoding          as T
 import qualified Data.ByteString.Char8       as C8
 import qualified Network.HTTP.Client         as Client
-import qualified Network.HTTP.Client.TLS     as Client
-import qualified Network.HTTP.Types          as Client
 
 getUserTimeline :: Env -> Client.Manager -> MentionRequest -> IO (Either String [Tweet])
 getUserTimeline env manager = performAction env manager . userRequestProvider

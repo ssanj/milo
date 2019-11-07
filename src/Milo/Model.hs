@@ -2,56 +2,45 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Milo.Model where
+module Milo.Model (
+    LiveSearch(..)
+  , TwitterWebUrl(..)
+  , RequestProvider(..)
+  , TwitterHandle(..)
+  , TweetCount(..)
+  , SearchHitCount(..)
+  , SearchCriteria(..)
+  , RealName(..)
+  , MentionRequest(..)
+  , SearchRequest(..)
+  , TweetedBy(..)
+  , HeadingType(..)
+  , Heading(..)
+  , TweetOutput(..)
+  , TweetResultIO
+  , TweetResult
+  , TwitterEndpoint(..)
+  , TwitterError(..)
+  , RetweetStatus(..)
+  , TweetRetrievalError(..)
+  , Tweet(..)
+  , DirectMessageInfo(..)
+  , DirectMessages(..)
+  , DirectMessage(..)
+  , TwitterSearchResult(..)
+) where
 
 import GHC.Generics
 import Data.Aeson (FromJSON, parseJSON, (.:), (.:?), withObject, withArray)
-import qualified Data.ByteString.Char8 as C8
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client as Client
-
-newtype ClientKey         = ClientKey { unClientKey :: C8.ByteString } deriving Show
-newtype ClientSecret      = ClientSecret { unClientSecret :: C8.ByteString } deriving Show
-newtype AccessToken       = AccessToken { unAccessToken :: C8.ByteString } deriving Show
-newtype AccessTokenSecret = AccessTokenSecret { unAccessTokenSecret :: C8.ByteString } deriving Show
-
-data Env = Env {
-  _env :: MiloEnv,
-  _config :: MiloConfig
-}
-
-data MiloEnv = MiloEnv { 
-  _clientKey :: ClientKey, 
-  _clientSecret :: ClientSecret, 
-  _accessToken :: AccessToken, 
-  _accessTokenSecret :: AccessTokenSecret
-} deriving Show
 
 newtype LiveSearch = LiveSearch String deriving Show
 
 newtype TwitterWebUrl = TwitterWebUrl T.Text deriving Show
 
--- Boolean blindness?
-data MiloConfig = MiloConfig{
-  _debug :: Bool,
-  _showHomeTimeline :: Bool,
-  _showMentions :: Bool,
-  _showDirectMessages :: Bool,
-  _userTimelines :: [MentionRequest],
-  _searches :: [SearchRequest],
-  _twitterWebUrl :: TwitterWebUrl
-} deriving Show
-
 newtype RequestProvider m a = RequestProvider { getRequest :: m Client.Request }
-
-newtype ConfigProvider m a = ConfigProvider {
-  loadConfig :: String -> m Env
-}
-
-data ConfiguratorConfig
-
-data YamlConfig
 
 newtype TwitterHandle = TwitterHandle T.Text deriving Show
 

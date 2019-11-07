@@ -4,9 +4,8 @@ import Milo.Model
 import Data.Bifunctor (bimap)
 import qualified Network.HTTP.Client         as Client
 import qualified Data.Text                   as T
-import qualified Data.ByteString.Char8       as C8
 import Milo.UserTimeline.Service
-import Data.List (intercalate)
+import Milo.Config.Model (Env)
 
 endpoint :: String
 endpoint = "User Timeline"
@@ -15,6 +14,7 @@ userTimelineAction :: Env -> Client.Manager -> MentionRequest -> TweetResultIO T
 userTimelineAction env manager mentionRequest = convertResults <$> getUserTimeline env manager mentionRequest
   where 
         heading = Heading UserTimelineHeading $ twitterHandler mentionRequest
+        convertResults :: Either String [Tweet] -> TweetResult Tweet
         convertResults = bimap (TweetRetrievalError heading (TwitterEndpoint endpoint) . TwitterError) 
                                (TweetOutput heading)
   

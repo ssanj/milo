@@ -1,10 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Milo.Oauth2.Model where
+module Milo.Oauth2.Model (OAuth2ClientToken(..), BearerToken(..)) where
 
-import qualified Data.ByteString.Char8 as C8
-import Milo.Model
-import GHC.Generics
+import Milo.Config.Model (ClientKey)
+import Milo.Config.Model (ClientSecret)
+import GHC.Generics (Generic)
 import Data.Aeson (FromJSON)
 
 data OAuth2ClientToken = 

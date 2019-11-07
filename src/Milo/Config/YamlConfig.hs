@@ -5,7 +5,7 @@ module Milo.Config.YamlConfig (getConfigProvider) where
 
 import qualified System.Environment as SYS
 import qualified Milo.Model as M
-import Control.Monad
+import qualified Milo.Config.Model as CM
 import qualified Data.ByteString.Char8 as C8
 import qualified Data.Text as T
 import System.IO.Error (userError)
@@ -37,29 +37,29 @@ data MiloYamlSearch = MiloYamlSearch {
   miloyamlsearchHits :: Int
 } deriving (Generic, Show)
 
-getConfigProvider :: M.ConfigProvider IO M.YamlConfig
-getConfigProvider = M.ConfigProvider $ \filePrefix ->
+getConfigProvider :: CM.ConfigProvider IO CM.YamlConfig
+getConfigProvider = CM.ConfigProvider $ \filePrefix ->
   do
     configE <- Y.decodeFileEither $ filePrefix <> ".yaml" 
     case configE of 
-      Left error -> raiseError $ "got an error loading yaml: " <> (show error)
-      Right config -> (M.Env <$> getMiloEnv) `blah` getMiloConfig config
+      Left configError -> raiseError $ "got an error loading yaml: " <> (show configError)
+      Right config -> (CM.Env <$> getMiloEnv) `blah` getMiloConfig config
 
 blah :: Applicative f => f (a -> b) -> a -> f b
 blah fab a = fab <*> pure a
 
-getMiloEnv :: IO M.MiloEnv
+getMiloEnv :: IO CM.MiloEnv
 getMiloEnv = do
-  clientKey         <- M.ClientKey         <$> fromSystemEnv "clientKey"
-  clientSecret      <- M.ClientSecret      <$> fromSystemEnv "clientSecret"
-  accessToken       <- M.AccessToken       <$> fromSystemEnv "accessToken"
-  accessTokenSecret <- M.AccessTokenSecret <$> fromSystemEnv "accessTokenSecret"
-  pure $ M.MiloEnv clientKey clientSecret accessToken accessTokenSecret
+  clientKey         <- CM.ClientKey         <$> fromSystemEnv "clientKey"
+  clientSecret      <- CM.ClientSecret      <$> fromSystemEnv "clientSecret"
+  accessToken       <- CM.AccessToken       <$> fromSystemEnv "accessToken"
+  accessTokenSecret <- CM.AccessTokenSecret <$> fromSystemEnv "accessTokenSecret"
+  pure $ CM.MiloEnv clientKey clientSecret accessToken accessTokenSecret
 
 fromSystemEnv :: String -> IO C8.ByteString
 fromSystemEnv = fmap C8.pack . SYS.getEnv
 
-getMiloConfig :: MiloYamlConfig  -> M.MiloConfig
+getMiloConfig :: MiloYamlConfig  -> CM.MiloConfig
 getMiloConfig config = 
   let showRequest        = miloyamlconfigShowRequest config
       showHomeTimeline   = miloyamlconfigShowHomeTimeline config
@@ -68,14 +68,14 @@ getMiloConfig config =
       userTimelines      = getUserTimelines config
       searches           = getSearches config
       twitterWebUrl      = miloyamlconfigTwitterWebUrl config
-  in M.MiloConfig {
-       M._debug              = showRequest,
-       M._showHomeTimeline   = showHomeTimeline,
-       M._showMentions       = showMentions,
-       M._showDirectMessages = showDirectMessages,
-       M._userTimelines      = userTimelines,
-       M._searches           = searches,
-       M._twitterWebUrl      = M.TwitterWebUrl twitterWebUrl
+  in CM.MiloConfig {
+       CM._debug              = showRequest,
+       CM._showHomeTimeline   = showHomeTimeline,
+       CM._showMentions       = showMentions,
+       CM._showDirectMessages = showDirectMessages,
+       CM._userTimelines      = userTimelines,
+       CM._searches           = searches,
+       CM._twitterWebUrl      = M.TwitterWebUrl twitterWebUrl
      }
 
 instance A.FromJSON MiloYamlConfig where
@@ -96,5 +96,5 @@ getSearches config =
   (\(MiloYamlSearch _ term hits) -> M.SearchRequest (M.SearchCriteria term) (M.SearchHitCount hits)) <$> miloyamlconfigSearches config
 
 raiseError :: String -> IO a
-raiseError error = ioError $ userError error
+raiseError errorMessage = ioError $ userError errorMessage
 

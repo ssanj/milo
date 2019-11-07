@@ -29,3 +29,6 @@ searches:
     term: "#haskell"
     hits: 10
 twitter-web-url: "https://twitter.com/i/web/status"
+langs:
+  - en
+  - fr

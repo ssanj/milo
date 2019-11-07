@@ -40,8 +40,15 @@ library:
     - yaml
     - vector
   ghc-options:
+  - -Weverything
   - -fprint-potential-instances
-  
+  - -fno-warn-missing-import-lists
+  - -fno-warn-all-missed-specialisations  
+  - -Wno-implicit-prelude
+  - -Wno-unsafe
+  - -Wno-safe
+  - -Wno-type-defaults
+
 executables:
   milo-exe:
     main:                Main.hs

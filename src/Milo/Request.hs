@@ -1,14 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Milo.Request where
+module Milo.Request (
+    defaultParams
+  , defaultRequestProvider
+  , extendedTweetParam
+  , makeRequest
+) where
 
 import Control.Monad                   (when)
-import Milo.Model
+import Milo.Config.Model               (MiloConfig)
+import Milo.Config.Model               (_debug)
+import Milo.Model                      (RequestProvider(..))
+import Milo.Model                      (Tweet)
 import Milo.Format.Format              (displayJson)
 import qualified Data.ByteString.Char8 as C8
 import qualified Network.HTTP.Client   as Client
 import qualified Data.ByteString.Lazy  as LBS
-import Data.Aeson (FromJSON, eitherDecodeStrict', Value)
+import Data.Aeson (FromJSON, eitherDecodeStrict')
 
 countParam :: (C8.ByteString, Maybe C8.ByteString)
 countParam = ("count", Just "2")

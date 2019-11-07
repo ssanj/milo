@@ -3,16 +3,10 @@
 module Milo.DirectMessage.Service (getDirectMessages) where
 
 import Milo.Oauth1.Controller
-import Milo.Config
 import Milo.Model
-import Milo.Oauth1.Model
+import Milo.Config.Model (Env)
 
-import qualified Data.Text.Encoding          as T
-import qualified Data.ByteString.Char8       as C8
 import qualified Network.HTTP.Client         as Client
-import qualified Network.HTTP.Client.TLS     as Client
-import qualified Network.HTTP.Types          as Client
--- import Data.Aeson (Value)
 
 getDirectMessages :: Env -> Client.Manager -> IO (Either String DirectMessages)
 getDirectMessages env manager = performAction env manager $ RequestProvider $ Client.parseRequest directMessagesUrl

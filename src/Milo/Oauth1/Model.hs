@@ -1,4 +1,7 @@
-module Milo.Oauth1.Model where
+module Milo.Oauth1.Model (
+  OAuthToken(..), 
+  OAuthTokenSecret(..)
+) where
 
 import qualified Data.ByteString             as S
 

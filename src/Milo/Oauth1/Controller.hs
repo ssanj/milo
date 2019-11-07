@@ -1,24 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Milo.Oauth1.Controller where
+module Milo.Oauth1.Controller (performAction) where
 
 import qualified Network.OAuth               as OA
 import qualified Network.OAuth.Types.Params  as OA
 import qualified Data.ByteString.Char8       as C8
-import qualified Data.ByteString.Lazy        as LS
 import qualified Network.HTTP.Client         as Client
-import qualified Network.HTTP.Client.TLS     as Client
-import Data.Maybe (listToMaybe)
-import Network.HTTP.Types.Header (hAuthorization)
-import System.Environment (getEnv)
-import Data.CaseInsensitive (mk)
-import Milo.Config
 import Milo.Model
+import Milo.Config.Model
 import Milo.Request (makeRequest)
 import Milo.Oauth1.Model
-import Data.List (intercalate)
 import Data.Aeson (FromJSON)
-import Data.Aeson.Types (parseEither)
 
 clientOauthToken :: OAuthToken -> OAuthTokenSecret -> OA.Token OA.Client
 clientOauthToken (OAuthToken otoken) (OAuthTokenSecret osecret) = OA.Token otoken osecret
