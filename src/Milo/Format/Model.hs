@@ -8,6 +8,7 @@ module Milo.Format.Model (
 )where
 
 import Milo.Model
+import Milo.Resolution                        (resolveReTweets)
 import Milo.Format.Format                     (docToString)
 import qualified Text.PrettyPrint.ANSI.Leijen as ANSI
 import qualified Data.Text                    as T
@@ -24,7 +25,7 @@ displayFormatHeading (Heading SearchHeading        heading) = genericHeading $ "
   
 instance ANSI.Pretty (WithTwitterWebUrl Tweet) where
   pretty :: (WithTwitterWebUrl Tweet) -> ANSI.Doc
-  pretty (WithTwitterWebUrl url tweet) = formatTweetColored url tweet
+  pretty (WithTwitterWebUrl url tweet) = formatTweetColored url (resolveReTweets tweet)
 
 instance ANSI.Pretty (WithTwitterWebUrl DirectMessage) where
   pretty :: WithTwitterWebUrl DirectMessage -> ANSI.Doc

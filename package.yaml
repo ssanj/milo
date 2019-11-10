@@ -42,8 +42,9 @@ library:
   ghc-options:
   - -Weverything
   - -fprint-potential-instances
+  - -fprint-expanded-synonyms
   - -fno-warn-missing-import-lists
-  - -fno-warn-all-missed-specialisations  
+  - -fno-warn-all-missed-specialisations
   - -Wno-implicit-prelude
   - -Wno-unsafe
   - -Wno-safe
