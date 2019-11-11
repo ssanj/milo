@@ -39,6 +39,8 @@ library:
     - ansi-wl-pprint
     - yaml
     - vector
+    - parsec
+
   ghc-options:
   - -Weverything
   - -fprint-potential-instances
