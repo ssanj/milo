@@ -1,17 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Milo.Search.Parser.RepeatedText (
-    retweetTag
-  , RetweetTag(..)
+    searchTag
+  , SearchTag(..)
   , Parser
 ) where
 
-import Data.Text                     (Text)
-import Data.Text                     (pack)
-import qualified Text.Parsec      as P
-import Text.Parsec      ((<|>))
+import Data.Text             (Text)
+import Data.Text             (pack)
+import qualified Text.Parsec as P
+import Text.Parsec           ((<|>))
+import Control.Monad         (void)
 
-data RetweetTag = RetweetTag { _key :: Text, _input :: Text } 
+data SearchTag = SearchTag { _key :: Text, _value :: Text } 
 
 type Parser = P.Parsec String ()
 
@@ -21,11 +22,16 @@ punctuation = P.oneOf "!.?:"
 space :: Parser Char
 space = P.oneOf "\t\n\r\f\v"
 
-retweetTag :: Parser RetweetTag
-retweetTag = do
+searchTag :: Parser SearchTag
+searchTag = do
   str <- P.getInput
-  _   <- P.string "RT @"
-  _   <- P.manyTill P.anyChar (P.try $ P.char ':')
-  _   <- P.skipMany $ P.char ' '
+  -- Use 'try' here because optional fails if any input is consumed before failure
+  void $ P.optional $ P.try retweetTag
   key <- P.manyTill P.anyChar (P.try $ P.endOfLine <|> space <|> punctuation)
-  pure $ RetweetTag (pack key) (pack str)
+  pure $ SearchTag (pack key) (pack str)
+
+retweetTag :: Parser ()
+retweetTag = do
+  void $ P.string "RT @"
+  void $ P.manyTill P.anyChar (P.try $ P.char ':')
+  void $ P.skipMany $ P.char ' '
