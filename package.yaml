@@ -40,6 +40,7 @@ library:
     - yaml
     - vector
     - parsec
+    - containers
 
   ghc-options:
   - -Weverything
