@@ -12,9 +12,9 @@ import qualified Text.Parsec as P
 import Text.Parsec           ((<|>))
 import Control.Monad         (void)
 
-data SearchTag = SearchTag { _key :: Text, _value :: Text } 
+data SearchTag = SearchTag { _key :: Text, _value :: Text } deriving Show
 
-type Parser = P.Parsec String ()
+type Parser = P.Parsec Text ()
 
 punctuation :: Parser Char
 punctuation = P.oneOf "!.?:"
@@ -27,8 +27,8 @@ searchTag = do
   str <- P.getInput
   -- Use 'try' here because optional fails if any input is consumed before failure
   void $ P.optional $ P.try retweetTag
-  key <- P.manyTill P.anyChar (P.try $ P.endOfLine <|> space <|> punctuation)
-  pure $ SearchTag (pack key) (pack str)
+  key <- pack <$> P.manyTill P.anyChar (P.try $ P.endOfLine <|> space <|> punctuation)
+  pure $ SearchTag key str
 
 retweetTag :: Parser ()
 retweetTag = do

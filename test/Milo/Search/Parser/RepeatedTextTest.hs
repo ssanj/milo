@@ -19,7 +19,7 @@ import Data.Text                       (Text)
 import Data.Text                       (pack)
 
 test_all :: TestTree
-test_all = testGroup "Repeated Text Tests" [withRetweet, withoutRT]
+test_all = testGroup "Repeated Text Tests" [withRetweet, withoutRT, withEmoji]
 
 withRetweet :: TestTree
 withRetweet =
@@ -31,7 +31,7 @@ withRetweet =
                (\(SearchTag key value) -> 
                   do
                     key   @?= "Video of my talk at @Lambda_World (great conference btw"
-                    value @?= pack t1
+                    value @?= t1
                ) parseResult
   in testCase "with RT" result
 
@@ -45,6 +45,20 @@ withoutRT =
                (\(SearchTag key value) -> 
                   do
                     key   @?= "TQ Tezos are HIRING"
-                    value @?= pack t1
+                    value @?= t1
                ) parseResult
   in testCase "without RT" result
+
+withEmoji :: TestTree
+withEmoji =
+  let t1 = "I have been working on a type driven #haskell HTTP client library inspired by servant-client for some time now and today is the initial public release day \x1F642\x1F973.\n\nIntroductory blog" 
+      parser = parse searchTag ""
+      parseResult = parser t1
+      result = 
+        either (assertFailure . show) 
+               (\(SearchTag key value) -> 
+                  do
+                    key   @?= "I have been working on a type driven #haskell HTTP client library inspired by servant-client for some time now and today is the initial public release day \x1F642\x1F973"
+                    value @?= t1
+               ) parseResult
+  in testCase "withEmoji" result

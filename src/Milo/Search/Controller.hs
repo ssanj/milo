@@ -7,6 +7,7 @@ import Data.Either                               (rights)
 import Data.Bifunctor                            (bimap)
 import Text.Parsec                               (parse)
 import Text.Parsec                               (ParseError)
+import qualified Debug.Trace                     as D
 import qualified Data.Map.Strict                 as MS
 import qualified Data.Text                       as T
 import qualified Network.HTTP.Client             as Client
@@ -33,8 +34,11 @@ searchAction env manager searchRequest = convertResults <$> getSearch env manage
 
         filterRepeats :: [M.Tweet] -> [M.Tweet]
         filterRepeats tweets =
-          let searchTagTweetEPairs :: [Either ParseError (M.Tweet, R.SearchTag)] = (\tweet -> (tweet,) <$> (parse R.searchTag "" . full_text $ tweet)) <$> tweets
+          let searchTagTweetEPairs :: [Either ParseError (M.Tweet, R.SearchTag)] = (\tweet -> (tweet,) <$> (parse R.searchTag "" . T.pack . full_text $ tweet)) <$> tweets
               searchTagTweetPairs  :: [(M.Tweet, R.SearchTag)] = rights searchTagTweetEPairs
               keyTagPairs :: [(T.Text, M.Tweet)] = (\(tweet, (R.SearchTag key _)) -> (key, tweet)) <$> searchTagTweetPairs
               uniqueTweetMap :: MS.Map T.Text M.Tweet = MS.fromList keyTagPairs
-          in MS.elems uniqueTweetMap
+              traceOutput = "searchTagTweetEPairs: " <> (show searchTagTweetEPairs) <> 
+                            "\nkeyTagPairs: " <> (show keyTagPairs) <> 
+                            "\nuniqueTweetMap: " <> (show uniqueTweetMap)
+          in D.trace traceOutput $ MS.elems uniqueTweetMap
