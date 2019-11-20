@@ -1,13 +1,14 @@
 module Milo.Config.Model (
-  ClientKey(..),
-  ClientSecret(..),
-  AccessToken(..),
-  AccessTokenSecret(..),
-  Env(..),
-  MiloEnv(..),
-  MiloConfig(..),
-  ConfigProvider(..),
-  YamlConfig
+    ClientKey(..)
+  , ClientSecret(..)
+  , AccessToken(..)
+  , AccessTokenSecret(..)
+  , Env(..)
+  , MiloEnv(..)
+  , MiloConfig(..)
+  , ConfigProvider(..)
+  , YamlConfig
+  , debugSet
 ) where
 
 import Milo.Model (MentionRequest)
@@ -43,6 +44,9 @@ data MiloConfig = MiloConfig{
   _searches :: [SearchRequest],
   _twitterWebUrl :: TwitterWebUrl
 } deriving Show
+
+debugSet :: Env -> Bool
+debugSet = _debug . _config
 
 newtype ConfigProvider m a = ConfigProvider {
   loadConfig :: String -> m Env
