@@ -1,6 +1,6 @@
 ---
 #rename to debug
-show-request: true
+show-request: false
 show-home-timeline: true
 show-mentions: true
 show-direct-messages: true

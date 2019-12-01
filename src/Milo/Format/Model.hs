@@ -8,11 +8,16 @@ module Milo.Format.Model (
 )where
 
 import Milo.Model
+
+import Data.List                              (intercalate)
+
 import Milo.Resolution                        (resolveReTweets)
+import Milo.HtmlEntity                        (removeHtmlEntities)
 import Milo.Format.Format                     (docToString)
+
 import qualified Text.PrettyPrint.ANSI.Leijen as ANSI
 import qualified Data.Text                    as T
-import Data.List                              (intercalate)
+
 
 data WithTwitterWebUrl a = WithTwitterWebUrl TwitterWebUrl a
 
@@ -25,14 +30,11 @@ displayFormatHeading (Heading SearchHeading        heading) = genericHeading $ "
   
 instance ANSI.Pretty (WithTwitterWebUrl Tweet) where
   pretty :: (WithTwitterWebUrl Tweet) -> ANSI.Doc
-  pretty (WithTwitterWebUrl url tweet) = formatTweetColored url (resolveReTweets tweet)
+  pretty (WithTwitterWebUrl url tweet) = formatTweetColored url (removeHtmlEntities . resolveReTweets $ tweet)
 
 instance ANSI.Pretty (WithTwitterWebUrl DirectMessage) where
   pretty :: WithTwitterWebUrl DirectMessage -> ANSI.Doc
   pretty (WithTwitterWebUrl url dm) = formatDMColored url dm
-
--- instance ANSI.Pretty TweetRetrievalError where
---   pretty = displayFormatTweetRetrievalError
 
 displayFormat :: (ANSI.Pretty (WithTwitterWebUrl a)) => TwitterWebUrl -> TweetResult a -> ANSI.Doc
 displayFormat _ (Left tweetRetrievalError) = displayFormatTweetRetrievalError tweetRetrievalError
