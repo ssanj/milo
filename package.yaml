@@ -41,6 +41,7 @@ library:
     - vector
     - parsec
     - containers
+    - html-entities
 
   ghc-options:
   - -Weverything

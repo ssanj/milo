@@ -56,7 +56,7 @@ data MentionRequest = MentionRequest RealName TwitterHandle TweetCount deriving 
 
 data SearchRequest = SearchRequest SearchCriteria SearchHitCount deriving Show
 
-data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving (Generic, Show)
+data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving (Generic, Show, Eq)
 
 data HeadingType = MentionHeading | UserTimelineHeading | HomeTimelineHeading | DirectMessageHeading | SearchHeading deriving Show
 
@@ -72,7 +72,7 @@ newtype TwitterEndpoint = TwitterEndpoint String deriving Show
 
 newtype TwitterError = TwitterError String deriving Show
 
-data RetweetStatus = RetweetStatus { full_text :: !String, user :: TweetedBy }  deriving (Generic, Show)
+data RetweetStatus = RetweetStatus { full_text :: !String, user :: TweetedBy }  deriving (Generic, Show, Eq)
 
 data TweetRetrievalError = TweetRetrievalError Heading TwitterEndpoint TwitterError deriving Show
 
@@ -84,7 +84,7 @@ data Tweet =
     retweeted_status :: Maybe RetweetStatus,
     full_text :: !String, 
     lang :: !String
-  } deriving (Generic, Show)
+  } deriving (Generic, Show, Eq)
 
 data DirectMessageInfo = DirectMessageInfo {
   source_app_id :: Maybe T.Text, 
