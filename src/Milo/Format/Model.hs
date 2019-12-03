@@ -1,6 +1,7 @@
-{-# Language InstanceSigs #-}
+{-# Language InstanceSigs      #-}
 {-# Language FlexibleInstances #-}
-{-# Language FlexibleContexts #-}
+{-# Language FlexibleContexts  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Milo.Format.Model (
     WithTwitterWebUrl(..)
@@ -52,19 +53,19 @@ displayNumberedDoc withTwitterWebUrl =
 displayFormatTweetRetrievalError :: TweetRetrievalError -> ANSI.Doc
 displayFormatTweetRetrievalError (TweetRetrievalError heading (TwitterEndpoint endpoint) (TwitterError apiError)) =
   let title = displayFormatHeading heading
-      errorMessage = ANSI.text endpoint ANSI.<+> ANSI.text "failed due to:" ANSI.<+> ANSI.red (ANSI.text apiError)
+      errorMessage = ANSI.text (T.unpack endpoint) ANSI.<+> ANSI.text "failed due to:" ANSI.<+> ANSI.red (ANSI.text . T.unpack $ apiError)
   in title ANSI.<$$> errorMessage
 
-genericHeading :: String -> ANSI.Doc
-genericHeading = ANSI.underline . ANSI.white . ANSI.text
+genericHeading :: T.Text -> ANSI.Doc
+genericHeading = ANSI.underline . ANSI.white . ANSI.text . T.unpack
 
 formatTweetColored :: TwitterWebUrl -> Tweet -> ANSI.Doc
 formatTweetColored (TwitterWebUrl webUrl) (Tweet createdAt (TweetedBy _ screenName) idStr _ tweetText _) =
-  let cTweetText    = ANSI.yellow (ANSI.text tweetText)
+  let cTweetText    = ANSI.yellow (ANSI.text $ T.unpack tweetText)
       cTweetUserSep = ANSI.text "-"
-      cUser         = ANSI.green (ANSI.text $ "@" <> screenName)
+      cUser         = ANSI.green (ANSI.text $ "@" <> T.unpack screenName)
       cUserDataSep  = ANSI.text "on"
-      cDate         = ANSI.white (ANSI.text createdAt)
+      cDate         = ANSI.white (ANSI.text . T.unpack $ createdAt)
       cUrl          = ANSI.text $ T.unpack webUrl <> "/" <> T.unpack idStr --TODO: Handle case where trailing / is not given
       tweetDoc      = cTweetText ANSI.<+> cTweetUserSep ANSI.<+> cUser ANSI.<+> cUserDataSep ANSI.<+> cDate ANSI.<+> cUrl
   in tweetDoc 

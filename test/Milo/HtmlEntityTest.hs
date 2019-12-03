@@ -33,5 +33,5 @@ withAmp =
       expectedTweet = createTweet "For me, there was a tearing point maybe 3-4 years ago where my love of coding and desire to be as effective & valuable as I can possibly be started pointing in different directions. I'm still code-adjacent at least"
   in testCase "remove &amp;" $ outputTweet @?= expectedTweet
 
-createTweet :: String -> Tweet
+createTweet :: Text -> Tweet
 createTweet fullText = Tweet "" (TweetedBy "" "") "" Nothing fullText ""

@@ -28,6 +28,7 @@ module Milo.Model (
   , DirectMessages(..)
   , DirectMessage(..)
   , TwitterSearchResult(..)
+  , twitterError
 ) where
 
 import GHC.Generics
@@ -36,7 +37,7 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Network.HTTP.Client as Client
 
-newtype LiveSearch = LiveSearch String deriving Show
+newtype LiveSearch = LiveSearch T.Text deriving Show
 
 newtype TwitterWebUrl = TwitterWebUrl T.Text deriving Show
 
@@ -56,11 +57,11 @@ data MentionRequest = MentionRequest RealName TwitterHandle TweetCount deriving 
 
 data SearchRequest = SearchRequest SearchCriteria SearchHitCount deriving Show
 
-data TweetedBy = TweetedBy { name :: !String, screen_name :: !String } deriving (Generic, Show, Eq)
+data TweetedBy = TweetedBy { name :: !T.Text, screen_name :: !T.Text } deriving (Generic, Show, Eq)
 
 data HeadingType = MentionHeading | UserTimelineHeading | HomeTimelineHeading | DirectMessageHeading | SearchHeading deriving Show
 
-data Heading = Heading HeadingType String deriving Show
+data Heading = Heading HeadingType T.Text deriving Show
 
 data TweetOutput f a = TweetOutput Heading (f a)
 
@@ -68,22 +69,25 @@ type TweetResultIO a = IO (Either (TweetRetrievalError) (TweetOutput [] a))
 
 type TweetResult a = Either (TweetRetrievalError) (TweetOutput [] a)
 
-newtype TwitterEndpoint = TwitterEndpoint String deriving Show
+newtype TwitterEndpoint = TwitterEndpoint T.Text deriving Show
 
-newtype TwitterError = TwitterError String deriving Show
+newtype TwitterError = TwitterError T.Text deriving Show
 
-data RetweetStatus = RetweetStatus { full_text :: !String, user :: TweetedBy }  deriving (Generic, Show, Eq)
+twitterError :: String -> TwitterError
+twitterError = TwitterError . T.pack
+
+data RetweetStatus = RetweetStatus { full_text :: !T.Text, user :: TweetedBy }  deriving (Generic, Show, Eq)
 
 data TweetRetrievalError = TweetRetrievalError Heading TwitterEndpoint TwitterError deriving Show
 
 data Tweet = 
   Tweet { 
-    created_at :: !String, 
+    created_at :: !T.Text, 
     user :: TweetedBy,
     id_str :: !T.Text,
     retweeted_status :: Maybe RetweetStatus,
-    full_text :: !String, 
-    lang :: !String
+    full_text :: !T.Text, 
+    lang :: !T.Text
   } deriving (Generic, Show, Eq)
 
 data DirectMessageInfo = DirectMessageInfo {

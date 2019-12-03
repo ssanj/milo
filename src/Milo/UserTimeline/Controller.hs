@@ -1,13 +1,18 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Milo.UserTimeline.Controller (userTimelineAction) where
 
 import Milo.Model
-import Data.Bifunctor (bimap)
-import qualified Network.HTTP.Client         as Client
-import qualified Data.Text                   as T
 import Milo.UserTimeline.Service
+
+import Data.Bifunctor (bimap)
+
 import Milo.Config.Model (Env)
 
-endpoint :: String
+import qualified Network.HTTP.Client         as Client
+import qualified Data.Text                   as T
+
+endpoint :: T.Text
 endpoint = "User Timeline"
 
 userTimelineAction :: Env -> Client.Manager -> MentionRequest -> TweetResultIO Tweet
@@ -15,8 +20,8 @@ userTimelineAction env manager mentionRequest = convertResults <$> getUserTimeli
   where 
         heading = Heading UserTimelineHeading $ twitterHandler mentionRequest
         convertResults :: Either String [Tweet] -> TweetResult Tweet
-        convertResults = bimap (TweetRetrievalError heading (TwitterEndpoint endpoint) . TwitterError) 
+        convertResults = bimap (TweetRetrievalError heading (TwitterEndpoint endpoint) . twitterError) 
                                (TweetOutput heading)
   
-twitterHandler :: MentionRequest -> String
-twitterHandler (MentionRequest (RealName realName) (TwitterHandle twuser) _) = T.unpack realName <> " (@" <> T.unpack twuser <> ")"
+twitterHandler :: MentionRequest -> T.Text
+twitterHandler (MentionRequest (RealName realName) (TwitterHandle twuser) _) = realName <> " (@" <> twuser <> ")"

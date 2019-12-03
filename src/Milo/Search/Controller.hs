@@ -1,5 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TupleSections         #-}
+{-# LANGUAGE OverloadedStrings     #-}
 
 module Milo.Search.Controller (searchAction) where
 
@@ -9,20 +10,19 @@ import Data.Either                               (rights)
 import Data.Bifunctor                            (bimap)
 import Text.Parsec                               (parse)
 import Text.Parsec                               (ParseError)
+
+import Milo.Model                                (Tweet(full_text), TwitterSearchResult(statuses), twitterError) 
+import Milo.Search.Service                       (getSearch)
+import Milo.Config.Model                         (Env, debugSet)
+
 import qualified Data.Map.Strict                 as MS
 import qualified Data.Text                       as T
 import qualified Network.HTTP.Client             as Client
 
-
-import Milo.Model                                (Tweet(full_text)) 
-import Milo.Model                                (TwitterSearchResult(statuses)) 
-import Milo.Search.Service                       (getSearch)
-import Milo.Config.Model                         (Env)
-import Milo.Config.Model                         (debugSet)
 import qualified Milo.Search.Parser.RepeatedText as R
 import qualified Milo.Model                      as M 
 
-endpoint :: String
+endpoint :: T.Text
 endpoint = "Search"
 
 data DebugInfo = DebugInfo {
@@ -55,19 +55,19 @@ searchAction env manager searchRequest = do
         heading = M.Heading M.SearchHeading $ getSearchCriteria searchRequest
 
         convertResults :: Either String M.TwitterSearchResult -> Either M.TweetRetrievalError (DebugInfo, M.TweetOutput [] M.Tweet)
-        convertResults = bimap (M.TweetRetrievalError heading (M.TwitterEndpoint endpoint) . M.TwitterError) 
+        convertResults = bimap (M.TweetRetrievalError heading (M.TwitterEndpoint endpoint) . twitterError) 
                                (\tsr -> 
                                   let tweets = statuses tsr
                                       (FilteredTweets debugInfo filteredTweets) = filterRepeats tweets
                                   in (debugInfo, M.TweetOutput heading filteredTweets)
                                )
         
-        getSearchCriteria :: M.SearchRequest -> String
-        getSearchCriteria (M.SearchRequest (M.SearchCriteria searchCriteria) _) = T.unpack searchCriteria
+        getSearchCriteria :: M.SearchRequest -> T.Text
+        getSearchCriteria (M.SearchRequest (M.SearchCriteria searchCriteria) _) = searchCriteria
 
         filterRepeats :: [M.Tweet] -> FilteredTweets
         filterRepeats tweets =
-          let searchTagTweetEPairs :: [Either ParseError (M.Tweet, R.SearchTag)] = (\tweet -> (tweet,) <$> (parse R.searchTag "" . T.pack . full_text $ tweet)) <$> tweets
+          let searchTagTweetEPairs :: [Either ParseError (M.Tweet, R.SearchTag)] = (\tweet -> (tweet,) <$> (parse R.searchTag "" . full_text $ tweet)) <$> tweets
               searchTagTweetPairs  :: [(M.Tweet, R.SearchTag)] = rights searchTagTweetEPairs
               keyTagPairs :: [(T.Text, M.Tweet)] = (\(tweet, (R.SearchTag key _)) -> (key, tweet)) <$> searchTagTweetPairs
               uniqueTweetMap :: MS.Map T.Text M.Tweet = MS.fromList keyTagPairs
