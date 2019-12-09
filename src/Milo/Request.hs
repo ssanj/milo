@@ -19,7 +19,7 @@ import qualified Data.ByteString.Lazy  as LBS
 import Data.Aeson (FromJSON, eitherDecodeStrict')
 
 countParam :: (C8.ByteString, Maybe C8.ByteString)
-countParam = ("count", Just "2")
+countParam = ("count", Just "5")
 
 extendedTweetParam :: (C8.ByteString, Maybe C8.ByteString)
 extendedTweetParam = ("tweet_mode", Just "extended")
