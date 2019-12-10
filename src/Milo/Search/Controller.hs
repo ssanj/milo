@@ -37,39 +37,51 @@ data FilteredTweets = FilteredTweets DebugInfo [M.Tweet]
 searchAction :: Env -> Client.Manager -> M.SearchRequest -> M.TweetResultIO M.Tweet
 searchAction env manager searchRequest = do 
   searchResultE <- getSearch env manager searchRequest
-  case convertResults searchResultE of
+  case convertResults searchRequest searchResultE of
     Left e -> pure . Left $ e
     (Right (debugInfo, tweetResult)) -> do
       logDebugInfo (debugSet env) debugInfo
       pure . Right $ tweetResult
-  where 
-        logDebugInfo :: Bool -> DebugInfo -> IO ()
-        logDebugInfo debug (DebugInfo searchTagTweetEPairs searchTagTweetPairs keyTagPairs uniqueTweetMap) = 
-          let log = "\nsearchTagTweetEPairs: " <> show searchTagTweetEPairs <> 
-                    "\nsearchTagTweetPairs: " <> show searchTagTweetPairs <> 
-                    "\nkeyPairs: " <>  show keyTagPairs <> 
-                    "\nunqiueTweetMap: " <> show uniqueTweetMap
-          in when debug (putStrLn log)
 
-        heading :: M.Heading
-        heading = M.Heading M.SearchHeading $ getSearchCriteria searchRequest
+logDebugInfo :: Bool -> DebugInfo -> IO ()
+logDebugInfo debug (DebugInfo searchTagTweetEPairs searchTagTweetPairs keyTagPairs uniqueTweetMap) = 
+  let log = "\nsearchTagTweetEPairs: " <> show searchTagTweetEPairs <> 
+            "\nsearchTagTweetPairs: " <> show searchTagTweetPairs <> 
+            "\nkeyPairs: " <>  show keyTagPairs <> 
+            "\nunqiueTweetMap: " <> show uniqueTweetMap
+  in when debug (putStrLn log)
 
-        convertResults :: Either String M.TwitterSearchResult -> Either M.TweetRetrievalError (DebugInfo, M.TweetOutput [] M.Tweet)
-        convertResults = bimap (M.TweetRetrievalError heading (M.TwitterEndpoint endpoint) . twitterError) 
-                               (\tsr -> 
-                                  let tweets = statuses tsr
-                                      (FilteredTweets debugInfo filteredTweets) = filterRepeats tweets
-                                  in (debugInfo, M.TweetOutput heading filteredTweets)
-                               )
+heading :: M.SearchRequest -> M.Heading
+heading = M.Heading M.SearchHeading . getSearchCriteria
+
+convertResults :: M.SearchRequest -> Either String M.TwitterSearchResult -> Either M.TweetRetrievalError (DebugInfo, M.TweetOutput [] M.Tweet)
+convertResults searchRequest = 
+  let mkHeading = heading searchRequest in
+  bimap (M.TweetRetrievalError mkHeading (M.TwitterEndpoint endpoint) . twitterError) 
+        (\tsr -> 
+           let tweets = statuses tsr
+               (FilteredTweets debugInfo filteredTweets) = removeDuplicates tweets
+               -- limit hits to the number requested
+               hitCountRequested = getSearchHitCount searchRequest
+           in (debugInfo, M.TweetOutput mkHeading $ take hitCountRequested filteredTweets)
+        )
         
-        getSearchCriteria :: M.SearchRequest -> T.Text
-        getSearchCriteria (M.SearchRequest (M.SearchCriteria searchCriteria) _) = searchCriteria
+getSearchCriteria :: M.SearchRequest -> T.Text
+getSearchCriteria (M.SearchRequest (M.SearchCriteria searchCriteria) _) = searchCriteria
 
-        filterRepeats :: [M.Tweet] -> FilteredTweets
-        filterRepeats tweets =
-          let searchTagTweetEPairs :: [Either ParseError (M.Tweet, R.SearchTag)] = (\tweet -> (tweet,) <$> (parse R.searchTag "" . full_text $ tweet)) <$> tweets
-              searchTagTweetPairs  :: [(M.Tweet, R.SearchTag)] = rights searchTagTweetEPairs
-              keyTagPairs :: [(T.Text, M.Tweet)] = (\(tweet, (R.SearchTag key _)) -> (key, tweet)) <$> searchTagTweetPairs
-              uniqueTweetMap :: MS.Map T.Text M.Tweet = MS.fromList keyTagPairs
-              debugInfo = DebugInfo searchTagTweetEPairs searchTagTweetPairs keyTagPairs uniqueTweetMap
-          in FilteredTweets debugInfo $ MS.elems uniqueTweetMap
+getSearchHitCount :: M.SearchRequest -> Int
+getSearchHitCount (M.SearchRequest _ (M.SearchHitCount hitCount)) = hitCount
+
+
+removeDuplicates :: [M.Tweet] -> FilteredTweets
+removeDuplicates tweets =
+  let searchTagTweetEPairs :: [Either ParseError (M.Tweet, R.SearchTag)] = (\tweet -> (tweet,) <$> (parse R.searchTag "" . full_text $ tweet)) <$> tweets
+      
+      searchTagTweetPairs  :: [(M.Tweet, R.SearchTag)] = rights searchTagTweetEPairs
+      
+      keyTagPairs :: [(T.Text, M.Tweet)] = (\(tweet, (R.SearchTag key _)) -> (key, tweet)) <$> searchTagTweetPairs
+      
+      uniqueTweetMap :: MS.Map T.Text M.Tweet = MS.fromList keyTagPairs
+      
+      debugInfo = DebugInfo searchTagTweetEPairs searchTagTweetPairs keyTagPairs uniqueTweetMap
+  in FilteredTweets debugInfo $ MS.elems uniqueTweetMap

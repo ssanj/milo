@@ -29,4 +29,10 @@ searchParam :: SearchCriteria -> (C8.ByteString, Maybe C8.ByteString)
 searchParam (SearchCriteria searchCriteria) = ("q", Just . T.encodeUtf8 $ searchCriteria)
 
 numHits :: SearchHitCount -> (C8.ByteString, Maybe C8.ByteString)
-numHits (SearchHitCount count) = ("count", Just . C8.pack $ show count)
+numHits (SearchHitCount count) = 
+  -- Add a padding to the search hits as we filter out duplicate entries
+  -- Limit to a hundred because that is the maximum number of hits per search
+  -- request via the Twitter API. Also this prevents having to paginate the
+  -- data.
+  let paddingCount = min (count * 3) 100
+  in ("count", Just . C8.pack $ show paddingCount)
