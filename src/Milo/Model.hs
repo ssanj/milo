@@ -3,6 +3,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Milo.Model (
+  
+  -- data types
     LiveSearch(..)
   , TwitterWebUrl(..)
   , RequestProvider(..)
@@ -28,6 +30,12 @@ module Milo.Model (
   , DirectMessages(..)
   , DirectMessage(..)
   , TwitterSearchResult(..)
+  , DmEntityType(..)
+  , EntityId(..)
+  , DmEntity(..)
+  , TwitterUser(..)
+
+  -- functions
   , twitterError
 ) where
 
@@ -59,6 +67,8 @@ data SearchRequest = SearchRequest SearchCriteria SearchHitCount deriving Show
 
 data TweetedBy = TweetedBy { name :: !T.Text, screen_name :: !T.Text } deriving (Generic, Show, Eq)
 
+data TwitterUser = TwitterUser { id_str :: !T.Text, name :: !T.Text, screen_name :: !T.Text } deriving (Generic, Show, Eq)
+
 data HeadingType = MentionHeading | UserTimelineHeading | HomeTimelineHeading | DirectMessageHeading | SearchHeading deriving Show
 
 data Heading = Heading HeadingType T.Text deriving Show
@@ -80,6 +90,17 @@ data RetweetStatus = RetweetStatus { full_text :: !T.Text, user :: TweetedBy }  
 
 data TweetRetrievalError = TweetRetrievalError Heading TwitterEndpoint TwitterError deriving Show
 
+data DmEntityType = Sender | Recipient deriving (Generic, Show, Eq)
+
+newtype EntityId = EntityId { unEntityId :: T.Text } deriving (Show, Eq, Ord)
+
+data DmEntity = 
+  DmEntity {
+    entityType :: DmEntityType,
+    entityId :: EntityId,
+    entityUser :: Maybe TwitterUser
+  } deriving (Show, Eq)
+
 data Tweet = 
   Tweet { 
     created_at :: !T.Text, 
@@ -92,8 +113,8 @@ data Tweet =
 
 data DirectMessageInfo = DirectMessageInfo {
   source_app_id :: Maybe T.Text, 
-  recipient_id :: !T.Text,
-  sender_id :: !T.Text,
+  recipient :: DmEntity,
+  sender :: DmEntity,
   text :: !T.Text
 } deriving Show
 
@@ -110,6 +131,7 @@ data DirectMessages = DirectMessages { messages :: [DirectMessage] } deriving Sh
 newtype TwitterSearchResult = TwitterSearchResult { statuses :: [Tweet] } deriving (Generic, Show)
 
 instance FromJSON TweetedBy where
+instance FromJSON TwitterUser where
 instance FromJSON Tweet where
 instance FromJSON TwitterSearchResult where
 instance FromJSON RetweetStatus where
@@ -133,8 +155,8 @@ instance FromJSON DirectMessage where
         message_info = 
           DirectMessageInfo {
             source_app_id = _source_app_id,
-            recipient_id = _recipient_id,
-            sender_id = _sender_id,
+            recipient = DmEntity Recipient (EntityId _recipient_id) Nothing,
+            sender = DmEntity Sender (EntityId _sender_id) Nothing,
             text = _text
           },
         message_type = _message_type

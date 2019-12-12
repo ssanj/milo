@@ -71,11 +71,11 @@ formatTweetColored (TwitterWebUrl webUrl) (Tweet createdAt (TweetedBy _ screenNa
   in tweetDoc 
 
 formatDMColored :: TwitterWebUrl -> DirectMessage -> ANSI.Doc
-formatDMColored (TwitterWebUrl webUrl) (DirectMessage createdAt idStr (DirectMessageInfo _ recipient sender dmText) messageType) =
+formatDMColored (TwitterWebUrl webUrl) (DirectMessage createdAt idStr (DirectMessageInfo _ (DmEntity _ dmRecipient _) (DmEntity _ dmSender _) dmText) messageType) =
   let cDMText      = ANSI.yellow (ANSI.text $ T.unpack dmText)
       cDMUserSep   = ANSI.text "-"
-      cRecipient   = ANSI.text $ "to: " <> T.unpack recipient
-      cSender      = ANSI.text $ "from: " <> T.unpack sender
+      cRecipient   = ANSI.text $ "to: " <> T.unpack  (unEntityId dmRecipient)
+      cSender      = ANSI.text $ "from: " <> T.unpack (unEntityId dmSender)
       cUserDataSep = ANSI.text "on"
       cDate        = ANSI.white (ANSI.text $ T.unpack createdAt)
       cMType       = ANSI.text ("(" <>  T.unpack messageType <> ")")
