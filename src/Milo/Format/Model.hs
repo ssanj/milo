@@ -71,11 +71,11 @@ formatTweetColored (TwitterWebUrl webUrl) (Tweet createdAt (TweetedBy _ screenNa
   in tweetDoc 
 
 formatDMColored :: TwitterWebUrl -> DirectMessage -> ANSI.Doc
-formatDMColored (TwitterWebUrl webUrl) (DirectMessage createdAt idStr (DirectMessageInfo _ (DmEntity _ dmRecipient _) (DmEntity _ dmSender _) dmText) messageType) =
+formatDMColored (TwitterWebUrl webUrl) (DirectMessage createdAt idStr (DirectMessageInfo _ dmeRecipient dmeSender dmText) messageType) =
   let cDMText      = ANSI.yellow (ANSI.text $ T.unpack dmText)
       cDMUserSep   = ANSI.text "-"
-      cRecipient   = ANSI.text $ "to: " <> T.unpack  (unEntityId dmRecipient)
-      cSender      = ANSI.text $ "from: " <> T.unpack (unEntityId dmSender)
+      cRecipient   = ANSI.text $ "to: " <> getEntity dmeRecipient  --T.unpack  (unEntityId dmRecipient)
+      cSender      = ANSI.text $ "from: " <> getEntity dmeSender --T.unpack (unEntityId dmSender)
       cUserDataSep = ANSI.text "on"
       cDate        = ANSI.white (ANSI.text $ T.unpack createdAt)
       cMType       = ANSI.text ("(" <>  T.unpack messageType <> ")")
@@ -83,3 +83,6 @@ formatDMColored (TwitterWebUrl webUrl) (DirectMessage createdAt idStr (DirectMes
       dmDoc        = cDMText ANSI.<+> cDMUserSep ANSI.<+> cSender ANSI.<+> cRecipient ANSI.<+> cUserDataSep ANSI.<+> cDate ANSI.<+> cUrl ANSI.<+> cMType
   in dmDoc 
 
+getEntity :: DmEntity -> String
+getEntity (DmEntity _ _ (Just (TwitterUser _ tuName _))) = T.unpack tuName
+getEntity (DmEntity _ (EntityId eId) Nothing) = T.unpack eId
