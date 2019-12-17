@@ -1,6 +1,6 @@
 ---
 #rename to debug
-show-request: false
+show-request: true
 show-home-timeline: true
 show-mentions: true
 show-direct-messages: true
@@ -21,6 +21,21 @@ user-timelines:
     tweets: 5
   - real-name: "Andrew Newman"
     handle: "andrewfnewman"
+    tweets: 5
+  - real-name: "Matthew Edwards"
+    handle: "edwardsmatt"
+    tweets: 5
+  - real-name: "Michael Dawson"
+    handle: "nippysaurus"
+    tweets: 5
+  - real-name: "Mannan"
+    handle: "mannanlive"
+    tweets: 5
+  - real-name: "Thomas Hammond"
+    handle: "t0mmy44"
+    tweets: 5
+  - real-name: "Alex Kompos"
+    handle: "a_kompos"
     tweets: 5
 searches:
   - title: "What's new in Scala"
