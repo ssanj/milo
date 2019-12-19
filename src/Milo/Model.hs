@@ -75,9 +75,9 @@ data Heading = Heading HeadingType T.Text deriving Show
 
 data TweetOutput f a = TweetOutput Heading (f a)
 
-type TweetResultIO a = IO (Either (TweetRetrievalError) (TweetOutput [] a))
+type TweetResultIO a = IO (Either TweetRetrievalError (TweetOutput [] a))
 
-type TweetResult a = Either (TweetRetrievalError) (TweetOutput [] a)
+type TweetResult a = Either TweetRetrievalError (TweetOutput [] a)
 
 newtype TwitterEndpoint = TwitterEndpoint T.Text deriving Show
 
@@ -126,7 +126,7 @@ data DirectMessage =
     message_type :: !T.Text
 } deriving Show 
 
-data DirectMessages = DirectMessages { messages :: [DirectMessage] } deriving Show
+data DirectMessages = DirectMessages { messages :: [DirectMessage], cursorPosition :: Maybe T.Text } deriving Show
 
 newtype TwitterSearchResult = TwitterSearchResult { statuses :: [Tweet] } deriving (Generic, Show)
 
@@ -166,4 +166,5 @@ instance FromJSON DirectMessages where
   parseJSON = withObject "direct messages" $ \o ->
     do
       events <- o .: "events"
-      withArray "events" (fmap DirectMessages . fmap V.toList . traverse parseJSON) events
+      cursor <- o .:? "next_cursor"
+      withArray "events" (fmap (\msgs -> DirectMessages msgs cursor) . fmap V.toList . traverse parseJSON) events

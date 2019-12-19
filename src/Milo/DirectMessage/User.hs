@@ -17,11 +17,16 @@ import qualified Data.Map.Strict     as M
 import qualified Data.Set            as S
 import qualified Data.Text           as T
 
+-- | Sets the names of the users (Entities) referenced by id in the 'DirectMessage'.
+--
+-- Given a 'DirectMessages' and a list of 'TwitterUser's returns a 'DirectMessages' with
+-- *entityUser* field of the *recipient* and *sender* populated with a 'TwitterUser' if any of the supplied
+-- 'TwitterUser's match.
 setEntityNames :: DirectMessages -> [TwitterUser] -> DirectMessages
-setEntityNames (DirectMessages dms) tusers = 
+setEntityNames (DirectMessages dms cursor) tusers = 
   let userMap :: M.Map EntityId TwitterUser = M.fromList $ (\tw -> (EntityId (MO.id_str tw), tw)) <$> tusers 
       updatedDms :: [DirectMessage] = ((flip replaceEntityIdWithUserName) userMap) <$> dms
-  in DirectMessages updatedDms
+  in DirectMessages updatedDms cursor
 
 replaceEntityIdWithUserName :: DirectMessage -> M.Map EntityId TwitterUser -> DirectMessage
 replaceEntityIdWithUserName dm userMap =
