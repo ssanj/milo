@@ -2,3 +2,4 @@
 milo.cabal
 *~
 run
+run-exe

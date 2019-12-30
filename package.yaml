@@ -42,6 +42,8 @@ library:
     - parsec
     - containers
     - html-entities
+    - monad-loops
+    - mtl
 
   ghc-options:
   - -Weverything
