@@ -22,12 +22,15 @@ punctuation = P.oneOf "!.?:"
 space :: Parser Char
 space = P.oneOf "\t\n\r\f\v"
 
+unicodeEnding :: Parser Char
+unicodeEnding = P.char '\x2026'
+
 searchTag :: Parser SearchTag
 searchTag = do
   str <- P.getInput
   -- Use 'try' here because optional fails if any input is consumed before failure
   void $ P.optional $ P.try retweetTag
-  key <- pack <$> P.manyTill P.anyChar (P.try $ P.endOfLine <|> space <|> punctuation)
+  key <- pack <$> P.manyTill P.anyChar (P.try $ P.endOfLine <|> space <|> punctuation <|> unicodeEnding)
   pure $ SearchTag key str
 
 retweetTag :: Parser ()

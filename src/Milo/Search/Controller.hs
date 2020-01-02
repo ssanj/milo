@@ -25,8 +25,13 @@ import qualified Milo.Model                      as M
 endpoint :: T.Text
 endpoint = "Search"
 
+data ParseInfo = ParseInfo { 
+    _parseError :: ParseError 
+  , _originalTweet :: M.Tweet
+} deriving Show
+
 data DebugInfo = DebugInfo {
-    _searchTagTweetEPairs :: [Either ParseError (M.Tweet, R.SearchTag)]
+    _searchTagTweetEPairs :: [Either ParseInfo (M.Tweet, R.SearchTag)]
   , _searchTagTweetPairs :: [(M.Tweet, R.SearchTag)]
   , _keyTagPairs :: [(T.Text, M.Tweet)]
   , _uniqueTweetMap :: MS.Map T.Text M.Tweet
@@ -75,7 +80,7 @@ getSearchHitCount (M.SearchRequest _ (M.SearchHitCount hitCount)) = hitCount
 
 removeDuplicates :: [M.Tweet] -> FilteredTweets
 removeDuplicates tweets =
-  let searchTagTweetEPairs :: [Either ParseError (M.Tweet, R.SearchTag)] = (\tweet -> (tweet,) <$> (parse R.searchTag "" . full_text $ tweet)) <$> tweets
+  let searchTagTweetEPairs :: [Either ParseInfo (M.Tweet, R.SearchTag)] =  (\tweet -> bimap ((flip ParseInfo) tweet)  (tweet,) (parse R.searchTag "" . full_text $ tweet)) <$> tweets
       
       searchTagTweetPairs  :: [(M.Tweet, R.SearchTag)] = rights searchTagTweetEPairs
       
