@@ -11,7 +11,7 @@ module Milo.Cursored (
 ) where
 
 -- | Wrapper around a cursor of some sort
-newtype Cursor a = Cursor a deriving Eq
+newtype Cursor a = Cursor a deriving (Eq, Show)
 
 -- | An ADT to capture the three states of a cursor:
 data CursorState a 

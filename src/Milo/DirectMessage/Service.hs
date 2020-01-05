@@ -7,42 +7,39 @@ import Milo.Oauth1.Controller
 import Milo.Model
 
 import Control.Monad.Loops (unfoldrM)
+import Control.Monad (when)
 import Data.Foldable (fold)
 
-import Milo.Config.Model (Env)
+import Milo.Config.Model (Env, debugSet)
 import Milo.Cursored (CursorState(..), Cursor(..), unfoldWith)
 
+import qualified Data.List             as L
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
 import qualified Data.ByteString.Char8 as C8
 import qualified Network.HTTP.Client   as Client
 import qualified Control.Monad.Except  as Ex
+import qualified Control.Monad.Writer  as Wr
+
 
 type DmCursor = Cursor T.Text
 
+type DmIO = Ex.ExceptT String (Wr.WriterT [String] IO)
+
+-- TODO: Move log handling out of here into somewhere central
+
 getDirectMessages :: Env -> Client.Manager -> IO (Either String DirectMessages)
 getDirectMessages env manager = 
-  let results   :: Ex.ExceptT String IO [[DirectMessage]] = unfoldrM (unfoldWith extractState (serviceCall env manager)) NewCursor
+  let results   :: DmIO [[DirectMessage]] = unfoldrM (unfoldWith extractState (serviceCall env manager)) NewCursor
       flippedDM :: Maybe T.Text -> [DirectMessage] -> DirectMessages = flip DirectMessages
-      flattened :: Ex.ExceptT String IO DirectMessages   = (flippedDM Nothing . fold) <$> results
-  in Ex.runExceptT flattened
+      flattened :: DmIO DirectMessages = (flippedDM Nothing . fold) <$> results
 
--- getMoreDirectMessages :: Env -> Client.Manager ->  Maybe Cursor -> IO (Either String DirectMessages)
--- getMoreDirectMessages env manager nextCursor = do
---   putStrLn $ "cursor1: " <> (show nextCursor)
---   dmsE <- performAction env manager $ dmRequestProvider nextCursor -- dm1 (5)
---   case dmsE of
---     Right dms@(DirectMessages messageList (Just nextCursor')) -> 
---       if (null messageList) then -- if it's empty then get more
---         do
---           putStrLn $ "cursor2: " <> (show nextCursor')
---           (fmap (combineDms dms)) <$> (getMoreDirectMessages (Just . Cursor $ nextCursor') env manager)
---       else pure . Right $ dms
-
---     Right dms@(DirectMessages _ Nothing) -> putStrLn "no more cursors" >> pure (Right dms)
---     Left dmError -> pure . Left $ dmError
-
--- TODO: Make DirectMessages into a Monoid
+      dumpLogs :: [String] -> IO ()
+      dumpLogs logs = putStrLn "DM logs:" >> putStrLn (L.intercalate "\n" logs)
+  in do 
+       (dmE, logs) <- Wr.runWriterT $ Ex.runExceptT flattened
+       when (debugSet env) (dumpLogs logs)
+       pure dmE
 
 dmRequestProvider :: Maybe DmCursor -> RequestProvider IO DirectMessages
 dmRequestProvider cursor = RequestProvider $ addQueryParams cursor <$> Client.parseRequest directMessagesUrl
@@ -57,9 +54,11 @@ addQueryParams Nothing = id
 cursorPositionParam :: DmCursor -> (C8.ByteString, Maybe C8.ByteString)
 cursorPositionParam (Cursor pos) = ("cursor", Just . T.encodeUtf8 $ pos)
 
-serviceCall :: Env -> Client.Manager -> Maybe DmCursor -> Ex.ExceptT String IO DirectMessages
-serviceCall env manager maybeCursor = Ex.ExceptT $ performAction env manager $ dmRequestProvider maybeCursor
-  
+serviceCall :: Env -> Client.Manager -> Maybe DmCursor -> DmIO DirectMessages
+serviceCall env manager maybeCursor = 
+  let actionResult :: IO (Either String DirectMessages) = performAction env manager $ dmRequestProvider maybeCursor
+      actionResultWithLog :: IO (Either String DirectMessages, [String]) = fmap (\e -> (e,["Got cursor: " <> (show maybeCursor)])) actionResult
+  in Ex.ExceptT $ Wr.WriterT actionResultWithLog
 
 -- we only want to extract the first set of messages, so we stop once we have
 -- at least one message
