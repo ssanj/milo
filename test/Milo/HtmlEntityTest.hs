@@ -34,4 +34,4 @@ withAmp =
   in testCase "remove &amp;" $ outputTweet @?= expectedTweet
 
 createTweet :: Text -> Tweet
-createTweet fullText = Tweet "" (TweetedBy "" "") "" Nothing fullText ""
+createTweet fullText = Tweet "" (TweetedBy "" "") "" Nothing fullText "" 0 0
