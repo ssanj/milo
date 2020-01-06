@@ -2,7 +2,7 @@
 
 module Milo.UserTimeline.Service (getUserTimeline) where
 
-import Milo.Oauth2.Controller
+import Milo.Oauth1.Controller
 import Milo.Model
 import Milo.Config.Model (Env)
 import qualified Milo.Request as R
