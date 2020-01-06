@@ -103,12 +103,14 @@ data DmEntity =
 
 data Tweet = 
   Tweet { 
-    created_at :: !T.Text, 
-    user :: TweetedBy,
-    id_str :: !T.Text,
-    retweeted_status :: Maybe RetweetStatus,
-    full_text :: !T.Text, 
-    lang :: !T.Text
+      created_at :: !T.Text 
+    , user :: TweetedBy
+    , id_str :: !T.Text
+    , retweeted_status :: Maybe RetweetStatus
+    , full_text :: !T.Text 
+    , lang :: !T.Text
+    , retweet_count :: Int
+    , favorite_count :: Int
   } deriving (Generic, Show, Eq)
 
 data DirectMessageInfo = DirectMessageInfo {

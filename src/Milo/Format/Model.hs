@@ -60,14 +60,16 @@ genericHeading :: T.Text -> ANSI.Doc
 genericHeading = ANSI.underline . ANSI.white . ANSI.text . T.unpack
 
 formatTweetColored :: TwitterWebUrl -> Tweet -> ANSI.Doc
-formatTweetColored (TwitterWebUrl webUrl) (Tweet createdAt (TweetedBy _ screenName) idStr _ tweetText _) =
+formatTweetColored (TwitterWebUrl webUrl) (Tweet createdAt (TweetedBy _ screenName) idStr _ tweetText _ retCount favCount) =
   let cTweetText    = ANSI.yellow (ANSI.text $ T.unpack tweetText)
       cTweetUserSep = ANSI.text "-"
       cUser         = ANSI.green (ANSI.text $ "@" <> T.unpack screenName)
       cUserDataSep  = ANSI.text "on"
       cDate         = ANSI.white (ANSI.text . T.unpack $ createdAt)
       cUrl          = ANSI.text $ T.unpack webUrl <> "/" <> T.unpack idStr --TODO: Handle case where trailing / is not given
-      tweetDoc      = cTweetText ANSI.<+> cTweetUserSep ANSI.<+> cUser ANSI.<+> cUserDataSep ANSI.<+> cDate ANSI.<+> cUrl
+      cRetCount     = ANSI.red (ANSI.text $ "\x02939\x02938" <> show retCount)
+      cFavCount     = ANSI.green (ANSI.text $ "\x02665" <> show favCount)
+      tweetDoc      = cTweetText ANSI.<+> cTweetUserSep ANSI.<+> cUser ANSI.<+> cFavCount ANSI.<+> cRetCount ANSI.<+> cUserDataSep ANSI.<+> cDate ANSI.<+> cUrl
   in tweetDoc 
 
 formatDMColored :: TwitterWebUrl -> DirectMessage -> ANSI.Doc

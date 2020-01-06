@@ -7,7 +7,7 @@ import qualified Data.Text as T
 import Milo.Model
 
 resolveReTweets :: Tweet -> Tweet
-resolveReTweets tweet@(Tweet _ _ _ (Just retweetStatus) tweetText _) = 
+resolveReTweets tweet@(Tweet _ _ _ (Just retweetStatus) tweetText _ _ _) = 
   tweet { full_text = getFullText retweetStatus tweetText } where
 
     getFullText :: RetweetStatus -> T.Text -> T.Text
