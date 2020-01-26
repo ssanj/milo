@@ -22,6 +22,16 @@ runApp = do
   appEnv  <- getAppEnv
   manager <- Client.newManager tlsManager
   putStrLn ""
+  switchUI appEnv manager
+
+switchUI :: Env -> Client.Manager -> IO ()
+switchUI appEnv manager =
+  case (_uiType $ _config appEnv) of
+    Console -> consoleUI appEnv manager
+    TUI     -> tui appEnv manager 
+
+consoleUI :: Env -> Client.Manager -> IO ()
+consoleUI appEnv manager = do
   _dmsE <- directMessages appEnv manager
   let twitterWebUrl = _twitterWebUrl . _config $ appEnv
       directMessageResults = docToString . displayFormat twitterWebUrl $ _dmsE
@@ -29,6 +39,9 @@ runApp = do
   let endpointResults = endpoints appEnv manager
       displayResults  = fmap (fmap $ docToString . displayFormat twitterWebUrl) endpointResults
   traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
+
+tui :: Env -> Client.Manager -> IO ()
+tui _ _ = putStrLn "tui coming soon"
 
 pressAnyKeyToContinue :: IO ()
 pressAnyKeyToContinue = putStrLn "press any key to continue ..."

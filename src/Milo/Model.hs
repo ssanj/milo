@@ -34,9 +34,11 @@ module Milo.Model (
   , EntityId(..)
   , DmEntity(..)
   , TwitterUser(..)
+  , UIType(..)
 
   -- functions
   , twitterError
+  , parseUiType
 ) where
 
 import GHC.Generics
@@ -82,6 +84,13 @@ type TweetResult a = Either TweetRetrievalError (TweetOutput [] a)
 newtype TwitterEndpoint = TwitterEndpoint T.Text deriving Show
 
 newtype TwitterError = TwitterError T.Text deriving Show
+
+data UIType = Console | TUI deriving (Show, Eq)
+
+parseUiType :: T.Text -> UIType
+parseUiType "console" = Console
+parseUiType "tui"     = TUI
+parseUiType _         = Console
 
 twitterError :: String -> TwitterError
 twitterError = TwitterError . T.pack

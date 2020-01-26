@@ -16,13 +16,14 @@ import qualified Data.Aeson.Casing as A
 import GHC.Generics
 
 data MiloYamlConfig = MiloYamlConfig {
-  miloyamlconfigShowRequest :: Bool,
-  miloyamlconfigShowHomeTimeline :: Bool,
-  miloyamlconfigShowMentions :: Bool,
-  miloyamlconfigShowDirectMessages :: Bool,
-  miloyamlconfigUserTimelines :: [MiloYamlUser],
-  miloyamlconfigSearches :: [MiloYamlSearch],
-  miloyamlconfigTwitterWebUrl :: T.Text
+    miloyamlconfigShowRequest :: Bool
+  , miloyamlconfigShowHomeTimeline :: Bool
+  , miloyamlconfigShowMentions :: Bool
+  , miloyamlconfigShowDirectMessages :: Bool
+  , miloyamlconfigUserTimelines :: [MiloYamlUser]
+  , miloyamlconfigSearches :: [MiloYamlSearch]
+  , miloyamlconfigTwitterWebUrl :: T.Text
+  , miloyamlconfigUi :: T.Text
 } deriving (Generic, Show)
 
 data MiloYamlUser = MiloYamlUser {
@@ -68,14 +69,16 @@ getMiloConfig config =
       userTimelines      = getUserTimelines config
       searches           = getSearches config
       twitterWebUrl      = miloyamlconfigTwitterWebUrl config
+      uiType             = miloyamlconfigUi config
   in CM.MiloConfig {
-       CM._debug              = showRequest,
-       CM._showHomeTimeline   = showHomeTimeline,
-       CM._showMentions       = showMentions,
-       CM._showDirectMessages = showDirectMessages,
-       CM._userTimelines      = userTimelines,
-       CM._searches           = searches,
-       CM._twitterWebUrl      = M.TwitterWebUrl twitterWebUrl
+         CM._debug              = showRequest
+       , CM._showHomeTimeline   = showHomeTimeline
+       , CM._showMentions       = showMentions
+       , CM._showDirectMessages = showDirectMessages
+       , CM._userTimelines      = userTimelines
+       , CM._searches           = searches
+       , CM._twitterWebUrl      = M.TwitterWebUrl twitterWebUrl
+       , CM._uiType             = M.parseUiType uiType
      }
 
 instance A.FromJSON MiloYamlConfig where

@@ -11,9 +11,7 @@ module Milo.Config.Model (
   , debugSet
 ) where
 
-import Milo.Model (MentionRequest)
-import Milo.Model (SearchRequest)
-import Milo.Model (TwitterWebUrl)
+import Milo.Model (MentionRequest, SearchRequest, TwitterWebUrl, UIType)
 
 import qualified Data.ByteString.Char8 as C8
 
@@ -36,13 +34,14 @@ data MiloEnv = MiloEnv {
 
 -- Boolean blindness?
 data MiloConfig = MiloConfig{
-  _debug :: Bool,
-  _showHomeTimeline :: Bool,
-  _showMentions :: Bool,
-  _showDirectMessages :: Bool,
-  _userTimelines :: [MentionRequest],
-  _searches :: [SearchRequest],
-  _twitterWebUrl :: TwitterWebUrl
+    _debug :: Bool
+  , _showHomeTimeline :: Bool
+  , _showMentions :: Bool
+  , _showDirectMessages :: Bool
+  , _userTimelines :: [MentionRequest]
+  , _searches :: [SearchRequest]
+  , _twitterWebUrl :: TwitterWebUrl
+  , _uiType :: UIType
 } deriving Show
 
 debugSet :: Env -> Bool

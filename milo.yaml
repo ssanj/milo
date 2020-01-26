@@ -48,3 +48,5 @@ twitter-web-url: "https://twitter.com/i/web/status"
 langs:
   - en
   - fr
+# one of (console|tui)
+ui: console
