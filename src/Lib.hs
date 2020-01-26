@@ -20,6 +20,7 @@ import Milo.Search.Controller            (searchAction)
 import qualified Network.HTTP.Client     as Client
 import qualified Network.HTTP.Client.TLS as Client
 import qualified Milo.Display.Tui.Main   as TUIM
+import qualified Control.Monad.Except    as EX
 
 runApp :: IO ()
 runApp = do
@@ -47,9 +48,9 @@ consoleUI appEnv manager = do
 tui :: Env -> Client.Manager -> IO ()
 tui appEnv manager = 
   let endpointResults :: [IO (Either TweetRetrievalError (TweetOutput [] Tweet))] = endpoints appEnv manager
-  in case endpointResults of
-    [] -> putStrLn "no tweets"
-    (oneOfMany:_) -> oneOfMany >>= (\x -> TUIM.main [x])
+      asExceptT :: [EX.ExceptT TweetRetrievalError IO (TweetOutput [] Tweet)] = EX.ExceptT  <$> endpointResults
+      resultExceptT :: EX.ExceptT TweetRetrievalError IO [(TweetOutput [] Tweet)] = sequence asExceptT
+  in (EX.runExceptT resultExceptT) >>= TUIM.main
 
 pressAnyKeyToContinue :: IO ()
 pressAnyKeyToContinue = putStrLn "press any key to continue ..."
