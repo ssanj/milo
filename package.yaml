@@ -44,6 +44,8 @@ library:
     - html-entities
     - monad-loops
     - mtl
+    - brick
+    - vty
 
   ghc-options:
   - -Weverything

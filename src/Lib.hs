@@ -1,6 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Lib (runApp) where
+
+import Control.Monad                     (void)
 
 import Milo.Config
 import Milo.Model
@@ -13,9 +16,10 @@ import Milo.MentionsTimeline.Controller  (mentionsTimelineAction)
 import Milo.DirectMessage.Controller     (directMessagesAction)
 import Milo.UserTimeline.Controller      (userTimelineAction)
 import Milo.Search.Controller            (searchAction)
+
 import qualified Network.HTTP.Client     as Client
 import qualified Network.HTTP.Client.TLS as Client
-import Control.Monad (void)
+import qualified Milo.Display.Tui.Main   as TUIM
 
 runApp :: IO ()
 runApp = do
@@ -41,7 +45,11 @@ consoleUI appEnv manager = do
   traverse_ (\x -> x >>= putStrLn >> pressAnyKeyToContinue >> getChar) displayResults
 
 tui :: Env -> Client.Manager -> IO ()
-tui _ _ = putStrLn "tui coming soon"
+tui appEnv manager = 
+  let endpointResults :: [IO (Either TweetRetrievalError (TweetOutput [] Tweet))] = endpoints appEnv manager
+  in case endpointResults of
+    [] -> putStrLn "no tweets"
+    (oneOfMany:_) -> oneOfMany >>= (\x -> TUIM.main [x])
 
 pressAnyKeyToContinue :: IO ()
 pressAnyKeyToContinue = putStrLn "press any key to continue ..."

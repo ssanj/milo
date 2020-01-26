@@ -49,4 +49,4 @@ langs:
   - en
   - fr
 # one of (console|tui)
-ui: console
+ui: tui
