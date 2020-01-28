@@ -1,6 +1,6 @@
 ---
 #rename to debug
-show-request: true
+show-request: false
 show-home-timeline: true
 show-mentions: true
 show-direct-messages: true
@@ -10,11 +10,14 @@ user-timelines:
   - real-name: "Jack Low"
     handle: "wjlow"
     tweets: 5
+  - real-name: "Janidu Wanigasuriya"
+    handle: "JWanigasuriya"
+    tweets: 5
+  - real-name: "Prem Pillai"
+    handle: "cloud_on_prem"
+    tweets: 5
   - real-name: "Ken Scambler"
     handle: "KenScambler"
-    tweets: 5
-  - real-name: "Adam Fitzpatrick"
-    handle: "ajfitzpatrick"
     tweets: 5
   - real-name: "Chris Myers"
     handle: "cwmyers"
@@ -25,17 +28,8 @@ user-timelines:
   - real-name: "Matthew Edwards"
     handle: "edwardsmatt"
     tweets: 5
-  - real-name: "Michael Dawson"
-    handle: "nippysaurus"
-    tweets: 5
-  - real-name: "Mannan"
-    handle: "mannanlive"
-    tweets: 5
   - real-name: "Thomas Hammond"
     handle: "t0mmy44"
-    tweets: 5
-  - real-name: "Alex Kompos"
-    handle: "a_kompos"
     tweets: 5
 searches:
   - title: "What's new in Scala"

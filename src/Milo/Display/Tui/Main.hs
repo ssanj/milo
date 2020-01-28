@@ -26,10 +26,27 @@ type ResourceName = AttrName
 
 -- TODO: can we dump out errors here?
 iterateTweets :: AppState -> BrickEvent ResourceName e -> EventM ResourceName (Next AppState)
-iterateTweets ((action1:actions), _) (VtyEvent (E.EvKey E.KEnter _)) = 
-  let nextAction = action1 >>= (\trtNext -> pure (actions, Just trtNext)) in
-  suspendAndResume nextAction
-iterateTweets ([], _) (VtyEvent (E.EvKey E.KEnter _)) = halt ([], Nothing)
+iterateTweets ([], tweetResults) (VtyEvent (E.EvKey E.KEnter _)) =
+  case tweetResults of
+    Nothing                             -> halt ([], Nothing)     
+    Just (Left _)                       -> halt ([], Nothing)
+    Just (Right (M.TweetOutput _ []))   -> halt ([], Nothing)
+    Just (Right (M.TweetOutput _ (_:[])))  -> halt ([], Nothing)     
+    Just (Right (M.TweetOutput heading (_:x:xs))) -> continue ([], Just (Right (M.TweetOutput heading (x:xs))))
+
+iterateTweets (remActions@(action1:actions), tweetResults) (VtyEvent (E.EvKey E.KEnter _)) =
+  case tweetResults of
+    Nothing                               -> performNextAction
+    Just (Left _)                         -> performNextAction
+    Just (Right (M.TweetOutput _ []))     -> performNextAction
+    Just (Right (M.TweetOutput _ (_:[]))) -> performNextAction
+    Just (Right (M.TweetOutput heading (_:x:xs))) -> continue (remActions, Just (Right (M.TweetOutput heading (x:xs))))
+  where 
+      performNextAction :: EventM ResourceName (Next AppState)
+      performNextAction  = 
+        let nextAction = action1 >>= (\trtNext -> pure (actions, Just trtNext)) in
+        suspendAndResume nextAction
+
 iterateTweets (_, _) _ = halt ([], Nothing)
 
 drawTweet :: AppState -> [Widget n]
@@ -48,9 +65,10 @@ welcomeMessage :: Text -> Widget n
 welcomeMessage welcome = centreMessage welcome
       
 renderTweets :: M.TweetOutputWithTweetList -> [Widget n]
-renderTweets (M.TweetOutput heading []) = [withTopLabel (topLabel $ headingText heading) (center $ txtWrap "No Tweets")]
-renderTweets (M.TweetOutput heading tweets) = 
-  fmap (\(M.Tweet _ _ _ _ tweet _ _ _) -> withTopLabel (topLabel $ headingText heading) (center $ txtWrap tweet)) tweets
+renderTweets (M.TweetOutput heading []) = [withTopLabel (topLabel $ headingText heading) (center $ txtWrap "End of tweets")]
+renderTweets (M.TweetOutput heading (firstTweet:_)) = 
+  let (M.Tweet _ _ _ _ tweet _ _ _) = firstTweet
+  in [withTopLabel (topLabel $ headingText heading) (center $ txtWrap tweet)]
 
 renderTweetError :: M.TweetRetrievalError -> [Widget n]
 renderTweetError (M.TweetRetrievalError heading (M.TwitterEndpoint endpoint) (M.TwitterError tweetError)) =
