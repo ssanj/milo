@@ -20,7 +20,11 @@ module Milo.Model (
   , Heading(..)
   , TweetOutput(..)
   , TweetResultIO
+  , TweetResultIOWithTweet
+  , TweetOutputWithTweetList
   , TweetResult
+  , TweetResultWithTweet
+  , TweetResultWithTweets
   , TwitterEndpoint(..)
   , TwitterError(..)
   , RetweetStatus(..)
@@ -77,9 +81,17 @@ data Heading = Heading HeadingType T.Text deriving Show
 
 data TweetOutput f a = TweetOutput Heading (f a)
 
+type TweetOutputWithTweetList = TweetOutput [] Tweet
+
 type TweetResultIO a = IO (Either TweetRetrievalError (TweetOutput [] a))
 
+type TweetResultIOWithTweet = TweetResultIO Tweet
+
 type TweetResult a = Either TweetRetrievalError (TweetOutput [] a)
+
+type TweetResultWithTweet = Either TweetRetrievalError (TweetOutput [] Tweet)
+
+type TweetResultWithTweets = Either TweetRetrievalError [TweetOutput [] Tweet]
 
 newtype TwitterEndpoint = TwitterEndpoint T.Text deriving Show
 

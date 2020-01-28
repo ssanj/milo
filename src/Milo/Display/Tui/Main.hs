@@ -15,35 +15,48 @@ import Graphics.Vty.Attributes (defAttr)
 import qualified Graphics.Vty.Input.Events as E
 import qualified Milo.Model as M
 
-
-main :: Either M.TweetRetrievalError [M.TweetOutput [] M.Tweet] -> IO ()
-main tweets = void $ defaultMain myApp tweets
+-- Either TweetRetrievalError [TweetOutput [] Tweet]
+-- [IO (Either TweetRetrievalError (TweetOutput [] Tweet))]
+main :: [M.TweetResultIOWithTweet] -> IO ()
+main tweets = void $ defaultMain myApp (tweets, Nothing)
 
 -- TODO: Adapt to include DMs.
-type AppState = Either M.TweetRetrievalError [M.TweetOutput [] M.Tweet]
+type AppState = ([M.TweetResultIOWithTweet], Maybe M.TweetResultWithTweet)
 type ResourceName = AttrName
 
 -- TODO: can we dump out errors here?
 iterateTweets :: AppState -> BrickEvent ResourceName e -> EventM ResourceName (Next AppState)
-iterateTweets l@(Left _) (VtyEvent (E.EvKey E.KEnter _))     = halt l
-iterateTweets r@(Right []) (VtyEvent (E.EvKey E.KEnter _))   = halt r
-iterateTweets (Right ((M.TweetOutput _ []):ys)) (VtyEvent (E.EvKey E.KEnter _)) = continue $ Right ys 
-iterateTweets (Right (M.TweetOutput heading (_:xs):ys)) (VtyEvent (E.EvKey E.KEnter _)) = continue $ Right (M.TweetOutput heading xs:ys) 
-iterateTweets xs _                                         = halt xs
+iterateTweets ((action1:actions), _) (VtyEvent (E.EvKey E.KEnter _)) = 
+  let nextAction = action1 >>= (\trtNext -> pure (actions, Just trtNext)) in
+  suspendAndResume nextAction
+iterateTweets ([], _) (VtyEvent (E.EvKey E.KEnter _)) = halt ([], Nothing)
+iterateTweets (_, _) _ = halt ([], Nothing)
 
 drawTweet :: AppState -> [Widget n]
-drawTweet (Left (M.TweetRetrievalError heading endpoint tweeterror)) = 
-  [withTopLabel (topLabel $ headingText heading) (center $ txtWrap $ errorText heading endpoint tweeterror)]      
-drawTweet (Right tweetOutputs) = concat $ fmap renderTweets tweetOutputs
+drawTweet ([], Nothing) = [goodbyeMessage "Goodbye"]
+drawTweet (_:_, Nothing) = [welcomeMessage "Welcome to Milo"]
+drawTweet (_, Just (Right tweetOutputs)) = renderTweets tweetOutputs
+drawTweet (_, Just (Left tweetError)) = renderTweetError tweetError
+
+centreMessage :: Text -> Widget n
+centreMessage message = center . str . unpack $ message
+
+goodbyeMessage :: Text -> Widget n
+goodbyeMessage goodbye = centreMessage goodbye
+
+welcomeMessage :: Text -> Widget n
+welcomeMessage welcome = centreMessage welcome
       
-renderTweets :: M.TweetOutput [] M.Tweet -> [Widget n]
+renderTweets :: M.TweetOutputWithTweetList -> [Widget n]
+renderTweets (M.TweetOutput heading []) = [withTopLabel (topLabel $ headingText heading) (center $ txtWrap "No Tweets")]
 renderTweets (M.TweetOutput heading tweets) = 
   fmap (\(M.Tweet _ _ _ _ tweet _ _ _) -> withTopLabel (topLabel $ headingText heading) (center $ txtWrap tweet)) tweets
 
-
-errorText :: M.Heading -> M.TwitterEndpoint -> M.TwitterError -> Text
-errorText heading (M.TwitterEndpoint endpoint) (M.TwitterError tweetError) =
-  headingText heading <> ": " <> endpoint <> ", " <> tweetError
+renderTweetError :: M.TweetRetrievalError -> [Widget n]
+renderTweetError (M.TweetRetrievalError heading (M.TwitterEndpoint endpoint) (M.TwitterError tweetError)) =
+  let header    = headingText heading
+      errorText = header <> ": " <> endpoint <> ", " <> tweetError
+  in [withTopLabel (topLabel header) (center $ txtWrap $ errorText)]
 
 headingText :: M.Heading -> Text
 headingText (M.Heading M.MentionHeading       heading) = heading

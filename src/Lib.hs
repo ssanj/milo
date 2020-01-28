@@ -20,7 +20,6 @@ import Milo.Search.Controller            (searchAction)
 import qualified Network.HTTP.Client     as Client
 import qualified Network.HTTP.Client.TLS as Client
 import qualified Milo.Display.Tui.Main   as TUIM
-import qualified Control.Monad.Except    as EX
 
 runApp :: IO ()
 runApp = do
@@ -48,9 +47,7 @@ consoleUI appEnv manager = do
 tui :: Env -> Client.Manager -> IO ()
 tui appEnv manager = 
   let endpointResults :: [IO (Either TweetRetrievalError (TweetOutput [] Tweet))] = endpoints appEnv manager
-      asExceptT :: [EX.ExceptT TweetRetrievalError IO (TweetOutput [] Tweet)] = EX.ExceptT  <$> endpointResults
-      resultExceptT :: EX.ExceptT TweetRetrievalError IO [(TweetOutput [] Tweet)] = sequence asExceptT
-  in (EX.runExceptT resultExceptT) >>= TUIM.main
+  in  TUIM.main endpointResults
 
 pressAnyKeyToContinue :: IO ()
 pressAnyKeyToContinue = putStrLn "press any key to continue ..."
@@ -58,21 +55,21 @@ pressAnyKeyToContinue = putStrLn "press any key to continue ..."
 directMessages :: Env -> Client.Manager -> TweetResultIO DirectMessage
 directMessages env manager = directMessagesAction env manager
 
-endpoints :: Env -> Client.Manager -> [TweetResultIO Tweet]
+endpoints :: Env -> Client.Manager -> [TweetResultIOWithTweet]
 endpoints env manager = concatMap (\f -> f env manager) [homeTimelines, mentionsTimelines, userTimelines, searches]
 
-homeTimelines :: Env -> Client.Manager -> [TweetResultIO Tweet]
+homeTimelines :: Env -> Client.Manager -> [TweetResultIOWithTweet]
 homeTimelines env manager = 
   if (_showHomeTimeline . _config $ env) then [homeTimelineAction env manager] else []
 
-mentionsTimelines :: Env -> Client.Manager -> [TweetResultIO Tweet]
+mentionsTimelines :: Env -> Client.Manager -> [TweetResultIOWithTweet]
 mentionsTimelines env manager = 
   if (_showMentions . _config $ env) then [mentionsTimelineAction env manager] else []
 
-userTimelines :: Env -> Client.Manager -> [TweetResultIO Tweet]
+userTimelines :: Env -> Client.Manager -> [TweetResultIOWithTweet]
 userTimelines env manager = (userTimelineAction env manager) <$> (_userTimelines . _config $ env)
 
-searches :: Env -> Client.Manager -> [TweetResultIO Tweet]
+searches :: Env -> Client.Manager -> [TweetResultIOWithTweet]
 searches env manager = (searchAction env manager) <$> (_searches . _config $ env)
 
 tlsManager :: Client.ManagerSettings
