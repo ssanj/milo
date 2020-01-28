@@ -7,9 +7,9 @@ import Brick.Widgets.Center
 import Brick.Widgets.Border
 import Brick.Widgets.Border.Style
 
-
 import Data.Text (Text, unpack)
 import Control.Monad (void)
+import Control.Monad.IO.Class (liftIO)
 import Graphics.Vty.Attributes (defAttr)
 
 import qualified Graphics.Vty.Input.Events as E
@@ -45,7 +45,7 @@ iterateTweets (remActions@(action1:actions), tweetResults) (VtyEvent (E.EvKey E.
       performNextAction :: EventM ResourceName (Next AppState)
       performNextAction  = 
         let nextAction = action1 >>= (\trtNext -> pure (actions, Just trtNext)) in
-        suspendAndResume nextAction
+        liftIO nextAction >>= continue
 
 iterateTweets (_, _) _ = halt ([], Nothing)
 
