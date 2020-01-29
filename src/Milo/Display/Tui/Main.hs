@@ -7,10 +7,12 @@ import Brick.Widgets.Center
 import Brick.Widgets.Border
 import Brick.Widgets.Border.Style
 
-import Data.Text (Text, unpack)
-import Control.Monad (void)
-import Control.Monad.IO.Class (liftIO)
+import Data.Text               (Text, unpack)
+import Control.Monad           (void)
+import Control.Monad.IO.Class  (liftIO)
 import Graphics.Vty.Attributes (defAttr)
+import Milo.Resolution         (resolveReTweets)
+import Milo.HtmlEntity         (removeHtmlEntities)
 
 import qualified Graphics.Vty.Input.Events as E
 import qualified Milo.Model as M
@@ -67,7 +69,8 @@ welcomeMessage welcome = centreMessage welcome
 renderTweets :: M.TweetOutputWithTweetList -> [Widget n]
 renderTweets (M.TweetOutput heading []) = [withTopLabel (topLabel $ headingText heading) (center $ txtWrap "End of tweets")]
 renderTweets (M.TweetOutput heading (firstTweet:_)) = 
-  let (M.Tweet _ _ _ _ tweet _ _ _) = firstTweet
+  -- let (M.Tweet createdAt (TweetedBy _ screenName) idStr _ tweet _ retCount favCount) = removeHtmlEntities . resolveReTweets $ firstTweet
+  let (M.Tweet _ _ _ _ tweet _ _ _) = removeHtmlEntities . resolveReTweets $ firstTweet
   in [withTopLabel (topLabel $ headingText heading) (center $ txtWrap tweet)]
 
 renderTweetError :: M.TweetRetrievalError -> [Widget n]
