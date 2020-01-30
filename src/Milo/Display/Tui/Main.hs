@@ -7,15 +7,16 @@ import Brick.Widgets.Center
 import Brick.Widgets.Border
 import Brick.Widgets.Border.Style
 
-import Data.Text               (Text, unpack)
+import Data.Text               (Text, unpack, pack)
 import Control.Monad           (void)
 import Control.Monad.IO.Class  (liftIO)
-import Graphics.Vty.Attributes (defAttr)
 import Milo.Resolution         (resolveReTweets)
 import Milo.HtmlEntity         (removeHtmlEntities)
 
+import qualified Graphics.Vty.Attributes   as A
+import qualified Graphics.Vty              as V
 import qualified Graphics.Vty.Input.Events as E
-import qualified Milo.Model as M
+import qualified Milo.Model                as M
 
 -- Either TweetRetrievalError [TweetOutput [] Tweet]
 -- [IO (Either TweetRetrievalError (TweetOutput [] Tweet))]
@@ -70,8 +71,32 @@ renderTweets :: M.TweetOutputWithTweetList -> [Widget n]
 renderTweets (M.TweetOutput heading []) = [withTopLabel (topLabel $ headingText heading) (center $ txtWrap "End of tweets")]
 renderTweets (M.TweetOutput heading (firstTweet:_)) = 
   -- let (M.Tweet createdAt (TweetedBy _ screenName) idStr _ tweet _ retCount favCount) = removeHtmlEntities . resolveReTweets $ firstTweet
-  let (M.Tweet _ _ _ _ tweet _ _ _) = removeHtmlEntities . resolveReTweets $ firstTweet
-  in [withTopLabel (topLabel $ headingText heading) (center $ txtWrap tweet)]
+  let (M.Tweet createdAt (M.TweetedBy _ screenName) _ _ tweet _ reweetCount favCount) = removeHtmlEntities . resolveReTweets $ firstTweet
+  in [withTopLabel (topLabel $ headingText heading) (center $ (tweetTextW tweet) <=> ((tweetOwnerW screenName) <+> (tweetCreatedAtW createdAt)) <=> ((tweetFavCountW favCount) <+> (tweetRetweetCountW reweetCount)))]
+
+tweetTextW :: Text -> Widget n
+tweetTextW = hLimitPercent 80 . withAttr tweetTextAttr . txtWrap
+
+tweetOwnerW :: Text -> Widget n
+tweetOwnerW screenName = withAttr tweetUserScreenNameAttr $ txtWrap $ "- " <> "@" <> screenName
+
+tweetCreatedAtW :: Text -> Widget n
+tweetCreatedAtW = padLeft (Pad 2) . withAttr tweetCreatedAtAttr . txtWrap 
+
+heart :: Text
+heart = "\x02665"
+
+doubleArrows :: Text
+doubleArrows = "\x02939\x02938"
+
+intToText :: Int -> Text
+intToText = pack . show
+
+tweetFavCountW :: Int -> Widget n
+tweetFavCountW count = withAttr tweetFavouriteCountAttr . txtWrap $ (heart <> (intToText count))
+
+tweetRetweetCountW :: Int -> Widget n
+tweetRetweetCountW count = padLeft (Pad 2) . withAttr tweetFavouriteCountAttr . txtWrap $ (doubleArrows <> (intToText count))
 
 renderTweetError :: M.TweetRetrievalError -> [Widget n]
 renderTweetError (M.TweetRetrievalError heading (M.TwitterEndpoint endpoint) (M.TwitterError tweetError)) =
@@ -93,8 +118,28 @@ myApp = App {
   , appChooseCursor = (\_ _ -> Nothing)
   , appHandleEvent = iterateTweets  
   , appStartEvent = pure 
-  , appAttrMap = const $ attrMap defAttr []
+  , appAttrMap = const $ miloAttrMap
 }
+
+miloAttrMap :: AttrMap
+miloAttrMap = 
+  attrMap A.defAttr 
+    [
+        (tweetTextAttr, fg V.yellow)
+      , (tweetUserScreenNameAttr, fg V.green)
+      , (tweetCreatedAtAttr, fg V.white)
+      , (tweetFavouriteCountAttr, fg V.red)
+      , (tweetRetweetCountAttr, fg V.green)
+
+    ]
+
+tweetTextAttr, tweetUserScreenNameAttr, tweetCreatedAtAttr, tweetFavouriteCountAttr, tweetRetweetCountAttr :: AttrName
+tweetTextAttr           = "milo" <> "tweet" <> "full_text"
+tweetUserScreenNameAttr = "milo" <> "tweet" <> "user" <> "screen_name"
+tweetCreatedAtAttr = "milo" <> "tweet" <> "created_at"
+tweetFavouriteCountAttr = "milo" <> "tweet" <> "favouriteCount"
+tweetRetweetCountAttr = "milo" <> "tweet" <> "retweetCount"
+
 
 withTopLabel :: Widget s -> Widget s -> Widget s
 withTopLabel tl w = withBorderStyle unicode $ borderWithLabel tl $ w
