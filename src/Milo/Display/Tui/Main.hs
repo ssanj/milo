@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Milo.Display.Tui.Main (main) where
 
@@ -8,15 +9,20 @@ import Brick.Widgets.Border
 import Brick.Widgets.Border.Style
 
 import Data.Text               (Text, unpack, pack)
+import Data.Functor            (($>))
 import Control.Monad           (void)
 import Control.Monad.IO.Class  (liftIO)
+import Control.Exception       (catch)
+import Control.Exception.Base  (IOException)
 import Milo.Resolution         (resolveReTweets)
 import Milo.HtmlEntity         (removeHtmlEntities)
 
 import qualified Graphics.Vty.Attributes   as A
 import qualified Graphics.Vty              as V
 import qualified Graphics.Vty.Input.Events as E
+import qualified System.Process            as P
 import qualified Milo.Model                as M
+
 
 -- Either TweetRetrievalError [TweetOutput [] Tweet]
 -- [IO (Either TweetRetrievalError (TweetOutput [] Tweet))]
@@ -49,6 +55,22 @@ iterateTweets (remActions@(action1:actions), tweetResults) (VtyEvent (E.EvKey E.
       performNextAction  = 
         let nextAction = action1 >>= (\trtNext -> pure (actions, Just trtNext)) in
         liftIO nextAction >>= continue
+
+iterateTweets (actions, tweetResults) (VtyEvent (E.EvKey (E.KChar 'o') _)) =
+  case tweetResults of
+    Just (Right (M.TweetOutput _ ((M.Tweet _ _ url _ _ _ _ _):_))) -> 
+      -- TODO: Find a way to pass through the config. Maybe store it with state?
+      let openTweet :: IO ()
+          openTweet = P.callCommand $ "open https://twitter.com/i/web/status/" <> show url 
+
+          fallback :: IOException -> IO ()
+          fallback e = putStrLn $ "Could not launch browser: " <> show e
+          
+          nextAction :: IO ([M.TweetResultIOWithTweet], Maybe M.TweetResultWithTweet)
+          nextAction = (openTweet `catch` \(e :: IOException) -> fallback e) $> (actions, tweetResults)
+
+      in suspendAndResume nextAction
+    _ -> continue (actions, tweetResults)
 
 iterateTweets (_, _) _ = halt ([], Nothing)
 

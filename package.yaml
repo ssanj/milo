@@ -46,6 +46,7 @@ library:
     - mtl
     - brick
     - vty
+    - process
 
   ghc-options:
   - -Weverything
